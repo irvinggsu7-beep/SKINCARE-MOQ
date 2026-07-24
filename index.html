@@ -270,7 +270,7 @@
                   <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-spaborde bg-spanav text-spataupeoscuro text-xs font-bold">
                     🇲🇽 +52
                   </span>
-                  <input type="tel" id="client-phone" maxlength="10" placeholder="10 dígitos (ej. 7772148451)" class="w-full bg-spainput border border-spaborde rounded-r-xl px-4 py-2.5 text-sm text-spatextosub focus:outline-none focus:border-spataupe transition">
+                  <input type="tel" id="client-phone" maxlength="10" placeholder="10 dígitos (ej. 7351632002)" class="w-full bg-spainput border border-spaborde rounded-r-xl px-4 py-2.5 text-sm text-spatextosub focus:outline-none focus:border-spataupe transition">
                 </div>
               </div>
             </div>
@@ -482,7 +482,7 @@
           <h4 class="font-serif font-bold text-spataupeoscuro text-base border-b border-spaborde pb-2 flex items-center gap-2">
             <i class="fa-solid fa-key text-spataupe"></i> 1. Clave Admin
           </h4>
-          <p class="text-xs text-spatextosub font-medium">Contraseña actual por defecto: <span class="font-mono text-spataupeoscuro font-bold">0000</span></p>
+          <p class="text-xs text-spatextosub font-medium">Contraseña actual del sistema: <span class="font-mono text-spataupeoscuro font-bold" id="cfg-pwd-display">0000</span></p>
 
           <form onsubmit="changeAdminPassword(event)" class="space-y-3 text-xs">
             <div>
@@ -992,7 +992,6 @@
       logoClickTimer: null
     };
 
-    // ACCESO SECRETO ADMIN CON TRIPLE CLIC EN EL LOGO
     function handleLogoClick() {
       STATE.logoClickCount++;
       if (STATE.logoClickCount === 1) {
@@ -1012,7 +1011,6 @@
       }
     }
 
-    // DATOS SEMILLA DE RESPALDO (LOCAL FALLBACK)
     const SEED_SERVICES = [
       { id: "1", nombre: "Facial Glow Premium", descripcion: "Limpieza profunda con punta de diamante, mascarilla hidroplástica de rosas y sueros hidratantes.", duracion_min: 60, precio: 850.00, activo: true },
       { id: "2", nombre: "Masaje Relajante Pink Lotus", descripcion: "Masaje de cuerpo completo con aceites esenciales de loto y rosas.", duracion_min: 60, precio: 900.00, activo: true },
@@ -1037,7 +1035,6 @@
       return `${parseInt(d)} de ${months[parseInt(m)-1]}`;
     }
 
-    // INICIALIZACIÓN AL CARGAR LA PÁGINA
     window.addEventListener('DOMContentLoaded', () => {
       initStorage();
       initSupabase();
@@ -1050,6 +1047,7 @@
       renderConfigBlockoutsList();
       renderConfigCouponsList();
       checkUrlHashForAdmin();
+      updateConfigUI();
     });
 
     window.addEventListener('hashchange', checkUrlHashForAdmin);
@@ -1116,6 +1114,16 @@
         const { data: b } = await STATE.supabaseClient.from('bloqueos_agenda').select('*');
         if (b) STATE.blockouts = b;
 
+        const { data: cfg } = await STATE.supabaseClient.from('configuracion').select('*');
+        if (cfg) {
+          const item = cfg.find(x => x.clave === 'datos_negocio');
+          if (item && item.valor) {
+            STATE.config = { ...STATE.config, ...item.valor };
+            saveLocalState();
+            updateConfigUI();
+          }
+        }
+
         renderServicesGrid();
         renderAdminAppointments();
         renderAdminBlockouts();
@@ -1127,6 +1135,11 @@
       } catch (err) {
         console.error("Error fetching Supabase data:", err);
       }
+    }
+
+    function updateConfigUI() {
+      const displayPwd = document.getElementById('cfg-pwd-display');
+      if (displayPwd) displayPwd.innerText = STATE.config.admin_password || '0000';
     }
 
     function openSupabaseModal() {
@@ -1176,7 +1189,7 @@
         document.getElementById('admin-icon').className = "fa-solid fa-lock-open text-[#2E5437]";
         switchView('admin');
       } else {
-        alert("⚠️ Contraseña incorrecta. Por defecto es 0000");
+        alert("⚠️ Contraseña incorrecta. Por favor verifica la clave.");
       }
     }
 
@@ -1752,7 +1765,6 @@
       });
     }
 
-    // ADMINISTRACIÓN & RENDERIZADO DE TABLAS ADMIN
     function renderAdminAppointments() {
       const tbody = document.getElementById('admin-appointments-tbody');
       tbody.innerHTML = '';
@@ -1857,14 +1869,12 @@
       }
     }
 
-    // MÓDULO DE CONTROL FINANCIERO RESICO
     function openFinancesModal() {
       renderFinancesTables();
       openModal('modal-finances');
     }
 
     function renderFinancesTables() {
-      // CAJA 1: ANTICIPOS RECIBIDOS ($150)
       const box1Tbody = document.getElementById('box1-tbody');
       box1Tbody.innerHTML = '';
 
@@ -1896,7 +1906,6 @@
       document.getElementById('box1-subtotal').innerText = `$${box1Subtotal.toFixed(2)} MXN`;
       document.getElementById('box1-iva').innerText = `$${box1Iva.toFixed(2)} MXN`;
 
-      // CAJA 2: LIQUIDACIÓN DE SERVICIOS CONCLUIDOS (MONTO REMANENTE)
       const box2Tbody = document.getElementById('box2-tbody');
       box2Tbody.innerHTML = '';
 
@@ -1941,7 +1950,6 @@
       document.getElementById('box2-subtotal').innerText = `$${box2Subtotal.toFixed(2)} MXN`;
       document.getElementById('box2-iva').innerText = `$${box2Iva.toFixed(2)} MXN`;
 
-      // RESUMEN GLOBAL COMBINADO RESICO
       const grandTotal = totalAnticipos + totalRemanentes;
       const grandSubtotal = grandTotal / 1.16;
       const grandIva = grandTotal - grandSubtotal;
@@ -1970,14 +1978,13 @@
 
     function exportFinanceReportToExcel() {
       const cdmxToday = getCDMXDate().toISOString().split('T')[0];
-      let csvContent = "\uFEFF"; // UTF-8 BOM para soporte de acentos en Excel
+      let csvContent = "\uFEFF";
 
       csvContent += "========================================================================================\n";
       csvContent += `SKINCARE MO - REPORTE CONTROL FINANCIERO RESICO (${cdmxToday})\n`;
       csvContent += "========================================================================================\n\n";
 
-      // SECCIÓN 1: CAJA 1 ANTICIPOS RECIBIDOS
-      csvContent += "SECCIN 1: CAJA 1 - ANTICIPOS RECIBIDOS ($150 MXN OPENBANK / ELECTRONICO)\n";
+      csvContent += "SECCION 1: CAJA 1 - ANTICIPOS RECIBIDOS ($150 MXN OPENBANK / ELECTRONICO)\n";
       csvContent += "Fecha,Paciente,Codigo Cita,Concepto,Metodo Pago,Subtotal,IVA (16%),Total Anticipo\n";
 
       const anticipoAppts = STATE.appointments.filter(a => ['confirmada', 'completada', 'no_acudio'].includes(a.estado));
@@ -1995,7 +2002,6 @@
       const ivaAnticipos = sumAnticipos - subAnticipos;
       csvContent += `,,TOTALES ANTICIPOS,,Electronico,${subAnticipos.toFixed(2)},${ivaAnticipos.toFixed(2)},${sumAnticipos.toFixed(2)}\n\n`;
 
-      // SECCIÓN 2: CAJA 2 LIQUIDACIÓN DE SERVICIOS CONCLUIDOS
       csvContent += "SECCION 2: CAJA 2 - LIQUIDACION DE SERVICIOS CONCLUIDOS (REMANENTE)\n";
       csvContent += "Fecha,Paciente,Codigo Cita,Servicios Otorgados,Metodo Pago,Remanente Pagado,Subtotal Remanente,IVA 16%,Total Servicio Cita\n";
 
@@ -2015,7 +2021,6 @@
       const ivaRemanentes = sumRemanentes - subRemanentes;
       csvContent += `,,,,TOTALES REMANENTES,${sumRemanentes.toFixed(2)},${subRemanentes.toFixed(2)},${ivaRemanentes.toFixed(2)},\n\n`;
 
-      // RESUMEN CONSOLIDADO RESICO
       const grandTotal = sumAnticipos + sumRemanentes;
       const grandSubtotal = grandTotal / 1.16;
       const grandIva = grandTotal - grandSubtotal;
@@ -2027,7 +2032,6 @@
       csvContent += `Total Subtotal (Base Gravable Sin IVA):,$${grandSubtotal.toFixed(2)} MXN\n`;
       csvContent += `Total IVA Trasladado (16%):,$${grandIva.toFixed(2)} MXN\n`;
 
-      // DESCARGA DEL ARCHIVO CSV / EXCEL
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
@@ -2305,7 +2309,7 @@
       renderConfigCouponsList();
     }
 
-    function changeAdminPassword(e) {
+    async function changeAdminPassword(e) {
       e.preventDefault();
       const curr = document.getElementById('pwd-current').value;
       const newP = document.getElementById('pwd-new').value;
@@ -2323,11 +2327,21 @@
 
       STATE.config.admin_password = newP;
       saveLocalState();
-      alert("✅ Contraseña administrativa actualizada exitosamente.");
+
+      if (STATE.supabaseClient) {
+        await STATE.supabaseClient.from('configuracion').upsert({
+          clave: 'datos_negocio',
+          valor: STATE.config,
+          actualizado_en: new Date().toISOString()
+        });
+      }
+
+      updateConfigUI();
+      alert("✅ Contraseña administrativa actualizada exitosamente y sincronizada.");
       e.target.reset();
     }
 
-    function saveOperatingHours(e) {
+    async function saveOperatingHours(e) {
       e.preventDefault();
       const checkboxes = document.querySelectorAll('.day-checkbox:checked');
       const selectedDays = Array.from(checkboxes).map(c => c.value);
@@ -2337,13 +2351,21 @@
       STATE.config.horario_cierre = document.getElementById('cfg-close-time').value;
 
       saveLocalState();
+
+      if (STATE.supabaseClient) {
+        await STATE.supabaseClient.from('configuracion').upsert({
+          clave: 'datos_negocio',
+          valor: STATE.config,
+          actualizado_en: new Date().toISOString()
+        });
+      }
+
       updateOperatingHoursDisplay();
       renderCalendar();
       calculateAvailableSlots();
       alert("✅ Horario operativo guardado y actualizado en tiempo real.");
     }
 
-    // UTILIDADES MODAL
     function openModal(id) {
       document.getElementById(id).classList.remove('hidden');
     }
