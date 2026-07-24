@@ -12,7 +12,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <!-- Tailwind CSS CDN & html2canvas -->
+  <!-- Tailwind CSS CDN & html2canvas & Supabase -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -75,6 +75,13 @@
       background: #db2777;
       border-radius: 999px;
     }
+    .calendar-day-btn {
+      transition: all 0.2s ease;
+    }
+    .calendar-day-btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col custom-scrollbar">
@@ -127,10 +134,10 @@
       </div>
 
       <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
-        <button onclick="openAddServiceModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-pink-600 text-white hover:bg-pink-500 transition shadow-md shadow-pink-600/30 flex items-center gap-1.5">
+        <button onclick="openServiceModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-pink-600 text-white hover:bg-pink-500 transition shadow-md shadow-pink-600/30 flex items-center gap-1.5">
           <i class="fa-solid fa-plus"></i> + Nuevo Servicio
         </button>
-        <button onclick="openQuickBlockModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 text-white hover:bg-amber-500 transition shadow-md shadow-amber-600/30 flex items-center gap-1.5">
+        <button onclick="switchAdminTab('configuracion')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 text-white hover:bg-amber-500 transition shadow-md shadow-amber-600/30 flex items-center gap-1.5">
           <i class="fa-solid fa-ban"></i> 🚫 Bloquear Horario
         </button>
         <button onclick="logoutAdmin()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700 transition flex items-center gap-1.5">
@@ -176,7 +183,7 @@
             <div class="flex items-center justify-between">
               <h3 class="text-lg font-semibold text-white flex items-center gap-2">
                 <span class="w-7 h-7 rounded-full bg-pink-600 text-white flex items-center justify-center text-xs font-bold">1</span>
-                Selecciona tu Tratamiento (Máximo 2)
+                Selecciona tu Tratamiento
               </h3>
               <span class="text-xs text-pink-300 bg-pink-950/60 px-2.5 py-1 rounded-full border border-pink-800/40" id="selected-count-badge">
                 0 / 2 Seleccionados
@@ -189,36 +196,52 @@
             </div>
           </div>
 
-          <!-- PASO 2: SELECCIÓN DE FECHA Y HORARIO -->
-          <div class="glass-panel p-6 rounded-2xl space-y-4">
+          <!-- PASO 2: SELECCIÓN DE FECHA Y HORARIO CON CALENDARIO INTERACTIVO -->
+          <div class="glass-panel p-6 rounded-2xl space-y-6">
             <h3 class="text-lg font-semibold text-white flex items-center gap-2">
               <span class="w-7 h-7 rounded-full bg-pink-600 text-white flex items-center justify-center text-xs font-bold">2</span>
-              Selecciona Fecha y Horario Disponible
+              Selecciona Fecha y Horario Disponible (Zona CDMX GMT-6)
             </h3>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-medium text-zinc-400 mb-1">Fecha de la Cita</label>
-                <input type="date" id="booking-date" onchange="calculateAvailableSlots()" class="w-full bg-zinc-900/80 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500 transition">
+            <!-- COMPONENTE DE CALENDARIO -->
+            <div class="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-4">
+              <!-- Cabecera del Calendario -->
+              <div class="flex items-center justify-between">
+                <button onclick="changeCalendarMonth(-1)" class="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-xs transition">
+                  <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <h4 class="font-serif font-bold text-white text-base sm:text-lg" id="calendar-month-year">Julio 2026</h4>
+                <button onclick="changeCalendarMonth(1)" class="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-xs transition">
+                  <i class="fa-solid fa-chevron-right"></i>
+                </button>
               </div>
 
-              <div>
-                <label class="block text-xs font-medium text-zinc-400 mb-1">Horario Operativo Configurado</label>
-                <div class="text-xs text-pink-300 bg-pink-950/40 border border-pink-800/30 rounded-xl p-2.5 flex items-center gap-2">
-                  <i class="fa-solid fa-clock"></i>
-                  <span id="operating-hours-display">Cargando horario...</span>
-                </div>
+              <!-- Días de la Semana -->
+              <div class="grid grid-cols-7 text-center text-xs font-semibold text-pink-300/80 border-b border-zinc-800 pb-2">
+                <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
+              </div>
+
+              <!-- Grid de Días del Mes -->
+              <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center" id="calendar-days-grid">
+                <!-- Renderizado por JavaScript -->
               </div>
             </div>
 
-            <!-- FRANSAS HORARIAS EN TIEMPO REAL -->
-            <div class="space-y-2">
-              <label class="block text-xs font-medium text-zinc-400">Horarios Disponibles Calculados Síncronamente</label>
-              <div id="time-slots-container" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-48 overflow-y-auto p-1 custom-scrollbar">
-                <p class="col-span-full text-xs text-zinc-500 text-center py-4">Selecciona primero tu(s) servicio(s) y una fecha válida.</p>
+            <!-- HORARIOS OPERATIVOS Y FRANZAS DISPONIBLES -->
+            <div class="space-y-3">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-pink-300 gap-1">
+                <span class="flex items-center gap-1.5">
+                  <i class="fa-solid fa-clock"></i> Horario habitual: <strong id="operating-hours-display">14:00 a 20:30 hrs</strong>
+                </span>
+                <span id="selected-date-label" class="font-semibold text-white">Fecha seleccionada: Ninguna</span>
               </div>
+
+              <div id="time-slots-container" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-48 overflow-y-auto p-1 custom-scrollbar">
+                <p class="col-span-full text-xs text-zinc-500 text-center py-4">Selecciona primero un día en el calendario superior.</p>
+              </div>
+
               <p class="text-[11px] text-zinc-400 flex items-center gap-1.5 italic">
-                <i class="fa-solid fa-circle-info text-pink-400"></i> Se requieren al menos 2 horas de anticipación para agendar.
+                <i class="fa-solid fa-circle-info text-pink-400"></i> Horario ajustado a Zona CDMX (GMT-6). Se requieren al menos 2 horas de anticipación.
               </p>
             </div>
           </div>
@@ -336,7 +359,7 @@
       <!-- PESTAÑA 1: AGENDA & CITAS -->
       <div id="admin-tab-agenda" class="space-y-6">
         
-        <!-- TARJETAS KPI -->
+        <!-- TARJETAS KPI (FINANCIERAS ACTUALIZADAS) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="glass-card p-4 rounded-2xl space-y-1">
             <p class="text-xs text-zinc-400 font-medium">Total Citas</p>
@@ -424,10 +447,10 @@
             <div>
               <h3 class="font-serif text-xl font-bold text-white">Catálogo de Servicios Administrables</h3>
               <p class="text-xs text-pink-300/80 mt-1">
-                <i class="fa-solid fa-circle-info"></i> Cualquier cambio recalcula automáticamente las franjas horarias disponibles para los clientes.
+                <i class="fa-solid fa-circle-info"></i> Cualquier cambio recalcula automáticamente las franjas horarias disponibles para los clientes en tiempo real.
               </p>
             </div>
-            <button onclick="openAddServiceModal()" class="px-4 py-2 text-xs font-bold rounded-xl bg-pink-600 text-white hover:bg-pink-500 transition shadow-lg shadow-pink-600/30 flex items-center gap-2">
+            <button onclick="openServiceModal()" class="px-4 py-2 text-xs font-bold rounded-xl bg-pink-600 text-white hover:bg-pink-500 transition shadow-lg shadow-pink-600/30 flex items-center gap-2">
               <i class="fa-solid fa-plus"></i> Agregar Servicio
             </button>
           </div>
@@ -503,13 +526,14 @@
           </form>
         </div>
 
-        <!-- COLUMNA 3: BLOQUEOS ESPECIALES -->
+        <!-- COLUMNA 3: BLOQUEOS ESPECIALES (CON LISTA Y ACCIONES) -->
         <div class="glass-panel p-5 rounded-2xl space-y-4">
           <h4 class="font-serif font-bold text-white text-base border-b border-zinc-800 pb-2 flex items-center gap-2">
             <i class="fa-solid fa-ban text-amber-500"></i> 3. Bloqueos Especiales
           </h4>
 
           <form onsubmit="saveSpecialBlockout(event)" class="space-y-3 text-xs">
+            <input type="hidden" id="blk-editing-id">
             <div>
               <label class="block text-zinc-400 mb-1">Motivo</label>
               <input type="text" id="blk-reason" placeholder="Ej. Mantenimiento" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
@@ -528,19 +552,28 @@
                 <input type="time" id="blk-end" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
               </div>
             </div>
-            <button type="submit" class="w-full py-2 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-500 transition">
+            <button type="submit" id="blk-submit-btn" class="w-full py-2 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-500 transition">
               Crear Bloqueo
             </button>
           </form>
+
+          <!-- LISTA VISUAL DE BLOQUEOS -->
+          <div class="pt-2 border-t border-zinc-800 space-y-2">
+            <label class="block text-[11px] font-semibold text-zinc-400 uppercase">Bloqueos Registrados</label>
+            <div id="config-blockouts-list" class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar text-xs">
+              <!-- Carga dinámicamente -->
+            </div>
+          </div>
         </div>
 
-        <!-- COLUMNA 4: CUPONES & VIGENCIAS -->
+        <!-- COLUMNA 4: CUPONES & VIGENCIAS (CON LISTA Y ACCIONES) -->
         <div class="glass-panel p-5 rounded-2xl space-y-4">
           <h4 class="font-serif font-bold text-white text-base border-b border-zinc-800 pb-2 flex items-center gap-2">
             <i class="fa-solid fa-ticket text-pink-500"></i> 4. Cupones
           </h4>
 
           <form onsubmit="saveCoupon(event)" class="space-y-3 text-xs">
+            <input type="hidden" id="cpn-editing-id">
             <div>
               <label class="block text-zinc-400 mb-1">Código Promocional</label>
               <input type="text" id="cpn-code" uppercase placeholder="Ej. VERANO20" required class="uppercase w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
@@ -566,10 +599,18 @@
               <label class="block text-zinc-400 mb-1">Fecha Caducidad</label>
               <input type="date" id="cpn-end" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
             </div>
-            <button type="submit" class="w-full py-2 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-500 transition">
+            <button type="submit" id="cpn-submit-btn" class="w-full py-2 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-500 transition">
               Crear Cupón
             </button>
           </form>
+
+          <!-- LISTA VISUAL DE CUPONES -->
+          <div class="pt-2 border-t border-zinc-800 space-y-2">
+            <label class="block text-[11px] font-semibold text-zinc-400 uppercase">Cupones Registrados</label>
+            <div id="config-coupons-list" class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar text-xs">
+              <!-- Carga dinámicamente -->
+            </div>
+          </div>
         </div>
 
       </div>
@@ -666,7 +707,48 @@
     </div>
   </div>
 
-  <!-- MODAL 2: AUTENTICACIÓN ADMIN -->
+  <!-- MODAL 2: CREAR / EDITAR SERVICIO -->
+  <div id="modal-service" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-6 border border-pink-500/30 space-y-4">
+      <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
+        <h4 class="font-serif text-lg font-bold text-white" id="service-modal-title">Agregar Nuevo Servicio</h4>
+        <button onclick="closeModal('modal-service')" class="text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form onsubmit="saveServiceForm(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="svc-id">
+        <div>
+          <label class="block text-zinc-400 mb-1">Nombre del Tratamiento *</label>
+          <input type="text" id="svc-name" required placeholder="Ej. Facial Glow Premium" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white">
+        </div>
+        <div>
+          <label class="block text-zinc-400 mb-1">Descripción</label>
+          <textarea id="svc-desc" rows="2" placeholder="Detalle del tratamiento..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-zinc-400 mb-1">Duración (Minutos) *</label>
+            <input type="number" id="svc-duration" required min="15" step="15" value="60" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white">
+          </div>
+          <div>
+            <label class="block text-zinc-400 mb-1">Precio ($ MXN) *</label>
+            <input type="number" id="svc-price" required min="0" step="10" value="850" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white">
+          </div>
+        </div>
+        <div>
+          <label class="flex items-center gap-2 text-zinc-300 font-medium">
+            <input type="checkbox" id="svc-active" checked class="w-4 h-4 accent-pink-600 rounded"> Servicio Habilitado en Catálogo
+          </label>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-xl transition shadow-lg shadow-pink-600/30">
+          Guardar Tratamiento
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: AUTENTICACIÓN ADMIN -->
   <div id="modal-admin-auth" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="glass-panel w-full max-w-sm rounded-3xl p-6 border border-pink-500/30 space-y-4">
       <div class="text-center space-y-1">
@@ -690,7 +772,7 @@
     </div>
   </div>
 
-  <!-- MODAL 3: CONFIGURAR SUPABASE -->
+  <!-- MODAL 4: CONFIGURAR SUPABASE -->
   <div id="modal-supabase" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
     <div class="glass-panel w-full max-w-md rounded-3xl p-6 border border-amber-500/30 space-y-4">
       <div class="text-center space-y-1">
@@ -740,6 +822,8 @@
       appliedCoupon: null,
       selectedDate: null,
       selectedSlot: null,
+      selectedEndSlot: null,
+      calendarCurrentDate: new Date(),
       supabaseClient: null,
       isAdminAuthenticated: false,
       activeTimerInterval: null
@@ -757,19 +841,32 @@
       { id: "c1", codigo: "BIENVENIDA10", tipo: "porcentaje", valor: 10.00, fecha_inicio: new Date().toISOString().split('T')[0], fecha_expiracion: new Date(Date.now() + 30*86400000).toISOString().split('T')[0], activo: true }
     ];
 
+    // FUNCIÓN DE FECHA EN ZONA HORARIA CDMX (GMT-6)
+    function getCDMXDate() {
+      const now = new Date();
+      const cdmxStr = now.toLocaleString("en-US", { timeZone: "America/Mexico_City" });
+      return new Date(cdmxStr);
+    }
+
+    function formatDateSpanish(dateStr) {
+      if (!dateStr) return '';
+      const [y, m, d] = dateStr.split('-');
+      const months = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+      return `${parseInt(d)} de ${months[parseInt(m)-1]}`;
+    }
+
     // INICIALIZACIÓN AL CARGAR LA PÁGINA
     window.addEventListener('DOMContentLoaded', () => {
       initStorage();
       initSupabase();
       renderServicesGrid();
+      renderCalendar();
       updateOperatingHoursDisplay();
       renderAdminAppointments();
       renderAdminBlockouts();
       renderAdminServices();
-
-      // Set min date to today
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('booking-date').min = today;
+      renderConfigBlockoutsList();
+      renderConfigCouponsList();
     });
 
     // SISTEMA DE ALMACENAMIENTO (LOCALSTORAGE + SUPABASE)
@@ -809,7 +906,6 @@
           document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
           document.getElementById('status-text').innerText = "🟢 Conectado en Vivo (Supabase)";
 
-          // Suscribir a cambios en tiempo real
           STATE.supabaseClient
             .channel('public:realtime')
             .on('postgres_changes', { event: '*', schema: 'public' }, () => fetchSupabaseData())
@@ -841,6 +937,9 @@
         renderAdminAppointments();
         renderAdminBlockouts();
         renderAdminServices();
+        renderConfigBlockoutsList();
+        renderConfigCouponsList();
+        renderCalendar();
         calculateAvailableSlots();
       } catch (err) {
         console.error("Error fetching Supabase data:", err);
@@ -919,7 +1018,7 @@
       });
     }
 
-    // RENDERIZADO DE SERVICIOS EN CLIENTE
+    // RENDERIZADO Y GESTIÓN DE SERVICIOS
     function renderServicesGrid() {
       const grid = document.getElementById('services-grid');
       grid.innerHTML = '';
@@ -936,7 +1035,7 @@
               <h4 class="font-bold text-white text-sm flex items-center gap-2">
                 ${service.nombre}
               </h4>
-              <input type="checkbox" ${isSelected ? 'checked' : ''} class="w-4 h-4 accent-pink-600 rounded">
+              <input type="checkbox" ${isSelected ? 'checked' : ''} class="w-4 h-4 accent-pink-600 rounded pointer-events-none">
             </div>
             <p class="text-xs text-zinc-400 line-clamp-2">${service.descripcion || ''}</p>
           </div>
@@ -1025,28 +1124,181 @@
       document.getElementById('summary-total').innerText = `$${total.toFixed(2)} MXN`;
     }
 
+    // MODAL DE AGREGAR / EDITAR SERVICIO
+    function openServiceModal(serviceId = null) {
+      const title = document.getElementById('service-modal-title');
+      if (serviceId) {
+        const s = STATE.services.find(x => x.id === serviceId);
+        if (!s) return;
+        title.innerText = "Editar Servicio";
+        document.getElementById('svc-id').value = s.id;
+        document.getElementById('svc-name').value = s.nombre;
+        document.getElementById('svc-desc').value = s.descripcion || '';
+        document.getElementById('svc-duration').value = s.duracion_min;
+        document.getElementById('svc-price').value = s.precio;
+        document.getElementById('svc-active').checked = s.activo;
+      } else {
+        title.innerText = "Agregar Nuevo Servicio";
+        document.getElementById('svc-id').value = '';
+        document.getElementById('svc-name').value = '';
+        document.getElementById('svc-desc').value = '';
+        document.getElementById('svc-duration').value = 60;
+        document.getElementById('svc-price').value = 850;
+        document.getElementById('svc-active').checked = true;
+      }
+      openModal('modal-service');
+    }
+
+    async function saveServiceForm(e) {
+      e.preventDefault();
+      const id = document.getElementById('svc-id').value;
+      const nombre = document.getElementById('svc-name').value.trim();
+      const descripcion = document.getElementById('svc-desc').value.trim();
+      const duracion_min = parseInt(document.getElementById('svc-duration').value);
+      const precio = parseFloat(document.getElementById('svc-price').value);
+      const activo = document.getElementById('svc-active').checked;
+
+      if (id) {
+        const s = STATE.services.find(x => x.id === id);
+        if (s) {
+          s.nombre = nombre;
+          s.descripcion = descripcion;
+          s.duracion_min = duracion_min;
+          s.precio = precio;
+          s.activo = activo;
+
+          if (STATE.supabaseClient) {
+            await STATE.supabaseClient.from('servicios').update({ nombre, descripcion, duracion_min, precio, activo }).eq('id', id);
+          }
+        }
+      } else {
+        const newS = {
+          id: crypto.randomUUID ? crypto.randomUUID() : `svc-${Date.now()}`,
+          nombre,
+          descripcion,
+          duracion_min,
+          precio,
+          activo,
+          creado_en: new Date().toISOString()
+        };
+        STATE.services.push(newS);
+
+        if (STATE.supabaseClient) {
+          await STATE.supabaseClient.from('servicios').insert([newS]);
+        }
+      }
+
+      saveLocalState();
+      closeModal('modal-service');
+      renderServicesGrid();
+      renderAdminServices();
+      calculateAvailableSlots();
+      alert("✅ Servicio guardado con éxito. Se actualizó el catálogo en tiempo real.");
+    }
+
+    async function deleteService(id) {
+      if (!confirm("¿Seguro que deseas eliminar este tratamiento del catálogo?")) return;
+      STATE.services = STATE.services.filter(s => s.id !== id);
+      saveLocalState();
+
+      if (STATE.supabaseClient) {
+        await STATE.supabaseClient.from('servicios').delete().eq('id', id);
+      }
+
+      renderServicesGrid();
+      renderAdminServices();
+      calculateAvailableSlots();
+    }
+
+    // COMPONENTE DE CALENDARIO INTERACTIVO (ZONA HORARIA CDMX GMT-6)
+    function renderCalendar() {
+      const grid = document.getElementById('calendar-days-grid');
+      grid.innerHTML = '';
+
+      const viewDate = STATE.calendarCurrentDate;
+      const year = viewDate.getFullYear();
+      const month = viewDate.getMonth();
+
+      const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+      document.getElementById('calendar-month-year').innerText = `${monthNames[month]} ${year}`;
+
+      const firstDayOfMonth = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      const cdmxNow = getCDMXDate();
+      const cdmxTodayStr = cdmxNow.toISOString().split('T')[0];
+
+      // Días de relleno anterior
+      for (let i = 0; i < firstDayOfMonth; i++) {
+        const dummy = document.createElement('div');
+        grid.appendChild(dummy);
+      }
+
+      // Días del mes
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+        const dayObj = new Date(year, month, d);
+        const dayOfWeekStr = dayObj.getDay().toString();
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'calendar-day-btn py-2.5 rounded-xl text-xs font-semibold flex flex-col items-center justify-center border transition';
+
+        const isPast = dateStr < cdmxTodayStr;
+        const isOperative = STATE.config.dias_operativos.includes(dayOfWeekStr);
+        const isSelected = STATE.selectedDate === dateStr;
+
+        if (isPast || !isOperative) {
+          btn.disabled = true;
+          btn.className += ' bg-zinc-950/40 border-transparent text-zinc-600';
+        } else if (isSelected) {
+          btn.className += ' bg-pink-600 border-pink-400 text-white shadow-lg shadow-pink-600/40 font-bold scale-105';
+        } else {
+          btn.className += ' bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-pink-500/60 hover:text-white';
+        }
+
+        btn.innerHTML = `<span>${d}</span>`;
+
+        if (dateStr === cdmxTodayStr) {
+          btn.innerHTML += `<span class="text-[9px] font-bold text-pink-400">Hoy</span>`;
+        }
+
+        btn.onclick = () => {
+          STATE.selectedDate = dateStr;
+          STATE.selectedSlot = null;
+          document.getElementById('selected-date-label').innerText = `Fecha seleccionada: ${formatDateSpanish(dateStr)}`;
+          renderCalendar();
+          calculateAvailableSlots();
+        };
+
+        grid.appendChild(btn);
+      }
+    }
+
+    function changeCalendarMonth(delta) {
+      STATE.calendarCurrentDate.setMonth(STATE.calendarCurrentDate.getMonth() + delta);
+      renderCalendar();
+    }
+
     // ALGORITMO DE DISPONIBILIDAD DE HORARIOS EN TIEMPO REAL
     function updateOperatingHoursDisplay() {
       const open = STATE.config.horario_apertura || "14:00";
       const close = STATE.config.horario_cierre || "20:30";
-      document.getElementById('operating-hours-display').innerText = `${open} a ${close} hrs (Lun - Sáb)`;
+      document.getElementById('operating-hours-display').innerText = `${open} a ${close} hrs`;
     }
 
     function calculateAvailableSlots() {
-      const dateVal = document.getElementById('booking-date').value;
+      const dateVal = STATE.selectedDate;
       const container = document.getElementById('time-slots-container');
       container.innerHTML = '';
 
-      if (!dateVal || STATE.selectedServiceIds.length === 0) {
-        container.innerHTML = '<p class="col-span-full text-xs text-zinc-500 text-center py-4">Selecciona primero tu(s) servicio(s) y una fecha válida.</p>';
+      if (!dateVal) {
+        container.innerHTML = '<p class="col-span-full text-xs text-zinc-500 text-center py-4">Selecciona primero un día en el calendario superior.</p>';
         return;
       }
 
-      const dateObj = new Date(dateVal + 'T00:00:00');
-      const dayOfWeek = dateObj.getDay().toString(); // 0 = Dom, 1 = Lun...
-
-      if (!STATE.config.dias_operativos.includes(dayOfWeek)) {
-        container.innerHTML = '<p class="col-span-full text-xs text-amber-400 text-center py-4">⚠️ El negocio no opera en este día de la semana.</p>';
+      if (STATE.selectedServiceIds.length === 0) {
+        container.innerHTML = '<p class="col-span-full text-xs text-zinc-500 text-center py-4">Selecciona al menos 1 tratamiento en el Paso 1.</p>';
         return;
       }
 
@@ -1060,9 +1312,10 @@
       const startMinutes = openHour * 60 + openMin;
       const endMinutes = closeHour * 60 + closeMin;
 
-      const now = new Date();
-      const isToday = dateVal === now.toISOString().split('T')[0];
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      const cdmxNow = getCDMXDate();
+      const cdmxTodayStr = cdmxNow.toISOString().split('T')[0];
+      const isToday = dateVal === cdmxTodayStr;
+      const currentMinutes = cdmxNow.getHours() * 60 + cdmxNow.getMinutes();
 
       let availableCount = 0;
 
@@ -1076,7 +1329,7 @@
         const endMin = endTimeInMin % 60;
         const endTimeStr = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
 
-        // Validación 1: Mínimo 2 horas y 1 minuto (121 min) de anticipación si es hoy
+        // Validación 1: Mínimo 2 horas y 1 minuto (121 min) de anticipación en hora CDMX
         if (isToday && (time - currentMinutes < 121)) {
           continue;
         }
@@ -1133,11 +1386,11 @@
       return h * 60 + m;
     }
 
-    // VIGENCIA Y APLICACIÓN DE CUPONES EN TIEMPO REAL
+    // CUPONES & VIGENCIAS
     function applyCoupon() {
       const code = document.getElementById('coupon-code').value.trim().toUpperCase();
       const statusEl = document.getElementById('coupon-status');
-      const dateVal = document.getElementById('booking-date').value || new Date().toISOString().split('T')[0];
+      const dateVal = STATE.selectedDate || getCDMXDate().toISOString().split('T')[0];
 
       if (!code) {
         statusEl.className = "text-xs mt-1.5 text-zinc-400";
@@ -1189,9 +1442,9 @@
         return;
       }
 
-      const dateVal = document.getElementById('booking-date').value;
+      const dateVal = STATE.selectedDate;
       if (!dateVal || !STATE.selectedSlot) {
-        alert("⚠️ Por favor selecciona una fecha y horario disponible.");
+        alert("⚠️ Por favor selecciona una fecha en el calendario y un horario disponible.");
         return;
       }
 
@@ -1203,16 +1456,15 @@
         return;
       }
 
-      // LÓGICA DE VENTANA DE PAGO DINÁMICA (2h vs 30m)
       const bookingDateTime = new Date(`${dateVal}T${STATE.selectedSlot}:00`);
-      const now = new Date();
+      const now = getCDMXDate();
       const diffHours = (bookingDateTime - now) / (1000 * 60 * 60);
 
-      let toleranceMinutes = 120; // 2 Horas Estándar (>6h anticipación)
+      let toleranceMinutes = 120;
       let toleranceType = 'regular';
 
       if (diffHours <= 6) {
-        toleranceMinutes = 30; // 30 Minutos de Pago Inmediato (entre 2h1m y 6h)
+        toleranceMinutes = 30;
         toleranceType = 'pronta';
       }
 
@@ -1261,7 +1513,6 @@
         await STATE.supabaseClient.from('citas').insert([newAppt]);
       }
 
-      // Cargar y mostrar la Ficha de Depósito Modal
       displayReceiptModal(newAppt);
     }
 
@@ -1269,20 +1520,18 @@
       document.getElementById('rcpt-code').innerText = `#${appt.codigo_cita}`;
       document.getElementById('rcpt-client-name').innerText = appt.cliente_nombre;
       document.getElementById('rcpt-services').innerText = appt.servicios_nombres;
-      document.getElementById('rcpt-datetime').innerText = `${appt.fecha} a las ${appt.hora_inicio} hrs`;
+      document.getElementById('rcpt-datetime').innerText = `${formatDateSpanish(appt.fecha)} a las ${appt.hora_inicio} hrs`;
       document.getElementById('rcpt-total').innerText = `$${parseFloat(appt.total).toFixed(2)} MXN`;
       document.getElementById('rcpt-reference-name').innerText = appt.cliente_nombre;
 
-      // Iniciar el reloj de tiempo límite de pago
       startReceiptCountdown(appt.limite_pago);
 
-      // Configurar enlace de WhatsApp directo
       const msg = encodeURIComponent(
         `🌸 *NUEVA RESERVACIÓN - SKINCARE MO*\n\n` +
         `📋 *Código:* ${appt.codigo_cita}\n` +
         `👤 *Paciente:* ${appt.cliente_nombre}\n` +
         `💆 *Servicio(s):* ${appt.servicios_nombres}\n` +
-        `📅 *Fecha & Hora:* ${appt.fecha} @ ${appt.hora_inicio} hrs\n` +
+        `📅 *Fecha & Hora:* ${formatDateSpanish(appt.fecha)} @ ${appt.hora_inicio} hrs\n` +
         `💰 *Total Cita:* $${parseFloat(appt.total).toFixed(2)} MXN\n` +
         `🏦 *Anticipo Pendiente:* $150.00 MXN (OPENBANK MX)\n\n` +
         `_Adjunto la ficha de depósito y mi comprobante de transferencia con mi nombre como referencia._`
@@ -1343,9 +1592,19 @@
         appts = appts.filter(a => a.fecha === filterDate);
       }
 
-      // KPIs
+      // NUEVA LÓGICA FINANCIERA REQUERIDA DE INGRESOS EST.
+      // Cita confirmada: +$150 (anticipo)
+      // Cita completada: +$Total (anticipo + resto)
+      // Cita no_acudio: +$150 (anticipo retenido)
+      // Pendiente / cancelada: +$0
+      const totalRev = STATE.appointments.reduce((sum, a) => {
+        if (a.estado === 'confirmada') return sum + 150.00;
+        if (a.estado === 'completada') return sum + parseFloat(a.total || 0);
+        if (a.estado === 'no_acudio') return sum + 150.00;
+        return sum;
+      }, 0);
+
       document.getElementById('kpi-total-citas').innerText = STATE.appointments.length;
-      const totalRev = STATE.appointments.reduce((sum, a) => sum + parseFloat(a.total || 0), 0);
       document.getElementById('kpi-ingresos-est').innerText = `$${totalRev.toFixed(2)}`;
       document.getElementById('kpi-servicios-activos').innerText = STATE.services.filter(s => s.activo).length;
       document.getElementById('kpi-bloqueos-activos').innerText = STATE.blockouts.length;
@@ -1357,7 +1616,9 @@
         const isExpired = new Date(appt.limite_pago).getTime() < Date.now() && appt.estado === 'pendiente';
         
         let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Pendiente</span>`;
-        if (appt.estado === 'confirmada') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Confirmada</span>`;
+        if (appt.estado === 'confirmada') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Confirmada ($150)</span>`;
+        if (appt.estado === 'completada') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">Concluida ($${parseFloat(appt.total).toFixed(2)})</span>`;
+        if (appt.estado === 'no_acudio') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/20 text-orange-300 border border-orange-500/30">No Acudió ($150)</span>`;
         if (appt.estado === 'cancelada') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-300 border border-red-500/30">Cancelada</span>`;
         if (isExpired) statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-700">Expirado</span>`;
 
@@ -1368,7 +1629,7 @@
           </td>
           <td class="p-3 font-medium text-pink-200">${appt.servicios_nombres}</td>
           <td class="p-3">
-            <div>${appt.fecha}</div>
+            <div>${formatDateSpanish(appt.fecha)}</div>
             <div class="text-zinc-400">${appt.hora_inicio} - ${appt.hora_fin}</div>
           </td>
           <td class="p-3">
@@ -1377,15 +1638,26 @@
             </span>
           </td>
           <td class="p-3">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
               ${statusBadge}
+              
               ${appt.estado === 'pendiente' ? `
-                <button onclick="updateApptStatus('${appt.id}', 'confirmada')" class="px-2 py-1 bg-emerald-600 text-white rounded text-[10px] hover:bg-emerald-500">Confirmar</button>
-                <button onclick="updateApptStatus('${appt.id}', 'cancelada')" class="px-2 py-1 bg-red-600 text-white rounded text-[10px] hover:bg-red-500">Cancelar</button>
+                <button onclick="updateApptStatus('${appt.id}', 'confirmada')" class="px-2 py-1 bg-emerald-600 text-white rounded text-[10px] font-bold hover:bg-emerald-500">Confirmar</button>
+                <button onclick="updateApptStatus('${appt.id}', 'cancelada')" class="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold hover:bg-red-500">Cancelar</button>
               ` : ''}
-              <a href="https://wa.me/${appt.cliente_telefono}" target="_blank" class="p-1 text-emerald-400 hover:text-emerald-300">
+
+              ${appt.estado === 'confirmada' ? `
+                <button onclick="updateApptStatus('${appt.id}', 'completada')" class="px-2 py-1 bg-purple-600 text-white rounded text-[10px] font-bold hover:bg-purple-500">Concluido</button>
+                <button onclick="updateApptStatus('${appt.id}', 'no_acudio')" class="px-2 py-1 bg-orange-600 text-white rounded text-[10px] font-bold hover:bg-orange-500">No Acudió</button>
+              ` : ''}
+
+              <a href="https://wa.me/${appt.cliente_telefono}" target="_blank" class="p-1 text-emerald-400 hover:text-emerald-300" title="Contactar WhatsApp">
                 <i class="fa-brands fa-whatsapp text-sm"></i>
               </a>
+
+              <button onclick="deleteAppointment('${appt.id}')" class="p-1 text-zinc-500 hover:text-red-400 transition" title="Eliminar del historial">
+                <i class="fa-solid fa-trash text-xs"></i>
+              </button>
             </div>
           </td>
         `;
@@ -1395,26 +1667,41 @@
 
     async function updateApptStatus(id, newStatus) {
       const appt = STATE.appointments.find(a => a.id === id);
-      if (appt) {
-        appt.estado = newStatus;
-        saveLocalState();
+      if (!appt) return;
 
-        if (STATE.supabaseClient) {
-          await STATE.supabaseClient.from('citas').update({ estado: newStatus }).eq('id', id);
-        }
+      const oldStatus = appt.estado;
+      appt.estado = newStatus;
+      saveLocalState();
 
-        renderAdminAppointments();
+      if (STATE.supabaseClient) {
+        await STATE.supabaseClient.from('citas').update({ estado: newStatus }).eq('id', id);
+      }
 
-        // Generar enlace WhatsApp de notificación
-        let msg = "";
-        if (newStatus === 'confirmada') {
-          msg = `🌸 *SKINCARE MO*: Hola ${appt.cliente_nombre}, ¡Tu pago ha sido verificado con éxito y tu cita del ${appt.fecha} a las ${appt.hora_inicio} hrs está 100% CONFIRMADA! Te esperamos con gusto.`;
-        } else {
-          msg = `🌸 *SKINCARE MO*: Hola ${appt.cliente_nombre}, Tu cita del ${appt.fecha} ha sido cancelada por falta de pago dentro del tiempo límite. Si deseas acudir, por favor realiza una nueva solicitud.`;
-        }
+      renderAdminAppointments();
 
+      // PLANTILLAS DE MENSAJES WHATSAPP EXACTAS SOLICITADAS
+      let msg = "";
+      if (newStatus === 'confirmada' && oldStatus === 'pendiente') {
+        const fechaFormat = formatDateSpanish(appt.fecha);
+        msg = `SKINCARE MO: ¡Excelente noticia, ${appt.cliente_nombre} 🌿 Tu pago quedó registrado correctamente. Tu cita del ${fechaFormat} a las ${appt.hora_inicio} hrs está totalmente asegurada. Estamos listos para darte la atención que te mereces. ¡Nos vemos muy pronto! ✨💆‍♀️`;
+        window.open(`https://wa.me/${appt.cliente_telefono}?text=${encodeURIComponent(msg)}`, '_blank');
+      } else if (newStatus === 'cancelada' && oldStatus === 'pendiente') {
+        msg = `SKINCARE MO: Hola, ${appt.cliente_nombre}. 😔 Lamentamos mucho no haber podido confirmar tu cita de hoy por falta de pago a tiempo. Para mantener la calidad y puntualidad de nuestros servicios, liberamos el espacio. Si aún deseas acudir, con gusto puedes volver a realizar tu cita en un horario disponible. ¡Quedamos al pendiente! ✨`;
         window.open(`https://wa.me/${appt.cliente_telefono}?text=${encodeURIComponent(msg)}`, '_blank');
       }
+    }
+
+    async function deleteAppointment(id) {
+      if (!confirm("¿Seguro que deseas eliminar esta cita del historial? Se recalcularán los ingresos y se liberará la franja horaria.")) return;
+      STATE.appointments = STATE.appointments.filter(a => a.id !== id);
+      saveLocalState();
+
+      if (STATE.supabaseClient) {
+        await STATE.supabaseClient.from('citas').delete().eq('id', id);
+      }
+
+      renderAdminAppointments();
+      calculateAvailableSlots();
     }
 
     function clearCancelledAppointments() {
@@ -1431,7 +1718,7 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="p-2 font-medium text-white">${blk.motivo}</td>
-          <td class="p-2 text-zinc-400">${blk.fecha} (${blk.hora_inicio}-${blk.hora_fin})</td>
+          <td class="p-2 text-zinc-400">${formatDateSpanish(blk.fecha)} (${blk.hora_inicio}-${blk.hora_fin})</td>
           <td class="p-2 text-right">
             <button onclick="deleteBlockout('${blk.id}')" class="text-red-400 hover:text-red-300">
               <i class="fa-solid fa-trash"></i>
@@ -1440,16 +1727,6 @@
         `;
         tbody.appendChild(tr);
       });
-    }
-
-    async function deleteBlockout(id) {
-      STATE.blockouts = STATE.blockouts.filter(b => b.id !== id);
-      saveLocalState();
-      if (STATE.supabaseClient) {
-        await STATE.supabaseClient.from('bloqueos_agenda').delete().eq('id', id);
-      }
-      renderAdminBlockouts();
-      calculateAvailableSlots();
     }
 
     function renderAdminServices() {
@@ -1466,17 +1743,222 @@
               ${s.activo ? 'Activo' : 'Inactivo'}
             </span>
           </div>
-          <p class="text-xs text-zinc-400">${s.descripcion}</p>
+          <p class="text-xs text-zinc-400 line-clamp-2">${s.descripcion || ''}</p>
           <div class="flex justify-between items-center text-xs pt-2 border-t border-zinc-800">
             <span class="text-pink-300 font-medium">${s.duracion_min} min</span>
             <span class="text-white font-bold">$${parseFloat(s.precio).toFixed(2)} MXN</span>
+          </div>
+          <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800/60">
+            <button onclick="openServiceModal('${s.id}')" class="px-2 py-1 bg-zinc-800 text-zinc-300 rounded text-[10px] hover:bg-zinc-700">
+              <i class="fa-solid fa-pen-to-square"></i> Editar
+            </button>
+            <button onclick="deleteService('${s.id}')" class="px-2 py-1 bg-red-950/60 text-red-300 rounded text-[10px] border border-red-800/40 hover:bg-red-900/80">
+              <i class="fa-solid fa-trash"></i> Eliminar
+            </button>
           </div>
         `;
         container.appendChild(card);
       });
     }
 
-    // ACCIONES DE CONFIGURACIÓN ADMIN
+    // ACCIONES DE CONFIGURACIÓN ADMIN (BLOQUEOS Y CUPONES VISUALIZABLES Y EDITABLES)
+    function renderConfigBlockoutsList() {
+      const list = document.getElementById('config-blockouts-list');
+      list.innerHTML = '';
+
+      if (STATE.blockouts.length === 0) {
+        list.innerHTML = '<p class="text-[11px] text-zinc-500 italic">No hay bloqueos activos.</p>';
+        return;
+      }
+
+      STATE.blockouts.forEach(blk => {
+        const item = document.createElement('div');
+        item.className = "flex justify-between items-center bg-zinc-900/80 p-2 rounded-lg border border-zinc-800 text-[11px]";
+        item.innerHTML = `
+          <div>
+            <p class="font-semibold text-white">${blk.motivo}</p>
+            <p class="text-zinc-400">${blk.fecha} | ${blk.hora_inicio} - ${blk.hora_fin}</p>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="editBlockout('${blk.id}')" class="text-pink-400 hover:text-pink-300"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteBlockout('${blk.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function editBlockout(id) {
+      const blk = STATE.blockouts.find(b => b.id === id);
+      if (!blk) return;
+      document.getElementById('blk-editing-id').value = blk.id;
+      document.getElementById('blk-reason').value = blk.motivo;
+      document.getElementById('blk-date').value = blk.fecha;
+      document.getElementById('blk-start').value = blk.hora_inicio;
+      document.getElementById('blk-end').value = blk.hora_fin;
+      document.getElementById('blk-submit-btn').innerText = "Actualizar Bloqueo";
+    }
+
+    async function saveSpecialBlockout(e) {
+      e.preventDefault();
+      const editingId = document.getElementById('blk-editing-id').value;
+      const reason = document.getElementById('blk-reason').value;
+      const date = document.getElementById('blk-date').value;
+      const start = document.getElementById('blk-start').value;
+      const end = document.getElementById('blk-end').value;
+
+      if (editingId) {
+        const blk = STATE.blockouts.find(b => b.id === editingId);
+        if (blk) {
+          blk.motivo = reason;
+          blk.fecha = date;
+          blk.hora_inicio = start;
+          blk.hora_fin = end;
+          if (STATE.supabaseClient) {
+            await STATE.supabaseClient.from('bloqueos_agenda').update({ motivo: reason, fecha: date, hora_inicio: start, hora_fin: end }).eq('id', editingId);
+          }
+        }
+      } else {
+        const newBlock = {
+          id: crypto.randomUUID ? crypto.randomUUID() : `blk-${Date.now()}`,
+          motivo: reason,
+          fecha: date,
+          hora_inicio: start,
+          hora_fin: end
+        };
+        STATE.blockouts.push(newBlock);
+        if (STATE.supabaseClient) {
+          await STATE.supabaseClient.from('bloqueos_agenda').insert([newBlock]);
+        }
+      }
+
+      saveLocalState();
+      document.getElementById('blk-editing-id').value = '';
+      document.getElementById('blk-submit-btn').innerText = "Crear Bloqueo";
+      e.target.reset();
+
+      renderAdminBlockouts();
+      renderConfigBlockoutsList();
+      calculateAvailableSlots();
+      alert("✅ Bloqueo registrado / actualizado.");
+    }
+
+    async function deleteBlockout(id) {
+      STATE.blockouts = STATE.blockouts.filter(b => b.id !== id);
+      saveLocalState();
+      if (STATE.supabaseClient) {
+        await STATE.supabaseClient.from('bloqueos_agenda').delete().eq('id', id);
+      }
+      renderAdminBlockouts();
+      renderConfigBlockoutsList();
+      calculateAvailableSlots();
+    }
+
+    function renderConfigCouponsList() {
+      const list = document.getElementById('config-coupons-list');
+      list.innerHTML = '';
+
+      if (STATE.coupons.length === 0) {
+        list.innerHTML = '<p class="text-[11px] text-zinc-500 italic">No hay cupones creados.</p>';
+        return;
+      }
+
+      const cdmxToday = getCDMXDate().toISOString().split('T')[0];
+
+      STATE.coupons.forEach(cpn => {
+        let badge = `<span class="px-1.5 py-0.5 text-[9px] rounded bg-emerald-500/20 text-emerald-300 font-bold">Vigente</span>`;
+        if (cdmxToday < cpn.fecha_inicio) {
+          badge = `<span class="px-1.5 py-0.5 text-[9px] rounded bg-amber-500/20 text-amber-300 font-bold">Próximamente</span>`;
+        } else if (cdmxToday > cpn.fecha_expiracion) {
+          badge = `<span class="px-1.5 py-0.5 text-[9px] rounded bg-red-500/20 text-red-300 font-bold">Caducó</span>`;
+        }
+
+        const item = document.createElement('div');
+        item.className = "flex justify-between items-center bg-zinc-900/80 p-2 rounded-lg border border-zinc-800 text-[11px]";
+        item.innerHTML = `
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold text-white font-mono">${cpn.codigo}</span>
+              ${badge}
+            </div>
+            <p class="text-zinc-400">${cpn.tipo === 'porcentaje' ? cpn.valor + '%' : '$' + cpn.valor} | ${cpn.fecha_inicio} a ${cpn.fecha_expiracion}</p>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="editCoupon('${cpn.id}')" class="text-pink-400 hover:text-pink-300"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteCoupon('${cpn.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function editCoupon(id) {
+      const cpn = STATE.coupons.find(c => c.id === id);
+      if (!cpn) return;
+      document.getElementById('cpn-editing-id').value = cpn.id;
+      document.getElementById('cpn-code').value = cpn.codigo;
+      document.getElementById('cpn-type').value = cpn.tipo;
+      document.getElementById('cpn-value').value = cpn.valor;
+      document.getElementById('cpn-start').value = cpn.fecha_inicio;
+      document.getElementById('cpn-end').value = cpn.fecha_expiracion;
+      document.getElementById('cpn-submit-btn').innerText = "Actualizar Cupón";
+    }
+
+    async function saveCoupon(e) {
+      e.preventDefault();
+      const editingId = document.getElementById('cpn-editing-id').value;
+      const code = document.getElementById('cpn-code').value.trim().toUpperCase();
+      const type = document.getElementById('cpn-type').value;
+      const val = parseFloat(document.getElementById('cpn-value').value);
+      const start = document.getElementById('cpn-start').value;
+      const end = document.getElementById('cpn-end').value;
+
+      if (editingId) {
+        const cpn = STATE.coupons.find(c => c.id === editingId);
+        if (cpn) {
+          cpn.codigo = code;
+          cpn.tipo = type;
+          cpn.valor = val;
+          cpn.fecha_inicio = start;
+          cpn.fecha_expiracion = end;
+          if (STATE.supabaseClient) {
+            await STATE.supabaseClient.from('cupones').update({ codigo: code, tipo: type, valor: val, fecha_inicio: start, fecha_expiracion: end }).eq('id', editingId);
+          }
+        }
+      } else {
+        const newCoupon = {
+          id: crypto.randomUUID ? crypto.randomUUID() : `cpn-${Date.now()}`,
+          codigo: code,
+          tipo: type,
+          valor: val,
+          fecha_inicio: start,
+          fecha_expiracion: end,
+          activo: true
+        };
+        STATE.coupons.push(newCoupon);
+        if (STATE.supabaseClient) {
+          await STATE.supabaseClient.from('cupones').insert([newCoupon]);
+        }
+      }
+
+      saveLocalState();
+      document.getElementById('cpn-editing-id').value = '';
+      document.getElementById('cpn-submit-btn').innerText = "Crear Cupón";
+      e.target.reset();
+
+      renderConfigCouponsList();
+      alert("✅ Cupón guardado / actualizado.");
+    }
+
+    async function deleteCoupon(id) {
+      STATE.coupons = STATE.coupons.filter(c => c.id !== id);
+      saveLocalState();
+      if (STATE.supabaseClient) {
+        await STATE.supabaseClient.from('cupones').delete().eq('id', id);
+      }
+      renderConfigCouponsList();
+    }
+
     function changeAdminPassword(e) {
       e.preventDefault();
       const curr = document.getElementById('pwd-current').value;
@@ -1510,65 +1992,9 @@
 
       saveLocalState();
       updateOperatingHoursDisplay();
+      renderCalendar();
       calculateAvailableSlots();
       alert("✅ Horario operativo guardado y actualizado en tiempo real.");
-    }
-
-    function saveSpecialBlockout(e) {
-      e.preventDefault();
-      const reason = document.getElementById('blk-reason').value;
-      const date = document.getElementById('blk-date').value;
-      const start = document.getElementById('blk-start').value;
-      const end = document.getElementById('blk-end').value;
-
-      const newBlock = {
-        id: crypto.randomUUID ? crypto.randomUUID() : `blk-${Date.now()}`,
-        motivo: reason,
-        fecha: date,
-        hora_inicio: start,
-        hora_fin: end
-      };
-
-      STATE.blockouts.push(newBlock);
-      saveLocalState();
-
-      if (STATE.supabaseClient) {
-        STATE.supabaseClient.from('bloqueos_agenda').insert([newBlock]);
-      }
-
-      renderAdminBlockouts();
-      calculateAvailableSlots();
-      alert("✅ Bloqueo de agenda registrado.");
-      e.target.reset();
-    }
-
-    function saveCoupon(e) {
-      e.preventDefault();
-      const code = document.getElementById('cpn-code').value.trim().toUpperCase();
-      const type = document.getElementById('cpn-type').value;
-      const val = parseFloat(document.getElementById('cpn-value').value);
-      const start = document.getElementById('cpn-start').value;
-      const end = document.getElementById('cpn-end').value;
-
-      const newCoupon = {
-        id: crypto.randomUUID ? crypto.randomUUID() : `cpn-${Date.now()}`,
-        codigo: code,
-        tipo: type,
-        valor: val,
-        fecha_inicio: start,
-        fecha_expiracion: end,
-        activo: true
-      };
-
-      STATE.coupons.push(newCoupon);
-      saveLocalState();
-
-      if (STATE.supabaseClient) {
-        STATE.supabaseClient.from('cupones').insert([newCoupon]);
-      }
-
-      alert("✅ Cupón registrado con éxito.");
-      e.target.reset();
     }
 
     // UTILIDADES MODAL
