@@ -116,7 +116,7 @@
 
       <!-- Acciones de Encabezado (Limpio para Celular) -->
       <div class="flex items-center space-x-2 shrink-0">
-        <!-- Indicador Estado Supabase (Solo en pantallas medianas/grandes) -->
+        <!-- Indicador Estado Supabase -->
         <button onclick="openSupabaseModal()" id="connection-status-btn" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#F5E6D3] text-[#7A542D] border border-[#E3CBB0] hover:bg-[#EFE0CC] transition shadow-sm">
           <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse" id="status-dot"></span>
           <span id="status-text">Modo Local</span>
@@ -927,7 +927,7 @@
 
       <form onsubmit="submitAdminAuth(event)" class="space-y-4">
         <div>
-          <input type="password" id="admin-auth-input" placeholder="Contraseña (Por defecto: 0000)" class="w-full bg-spainput border border-spaborde rounded-xl px-4 py-3 text-center font-mono text-lg text-spatextosub focus:outline-none focus:border-spataupe">
+          <input type="password" id="admin-auth-input" placeholder="Contraseña" class="w-full bg-spainput border border-spaborde rounded-xl px-4 py-3 text-center font-mono text-lg text-spatextosub focus:outline-none focus:border-spataupe">
         </div>
 
         <button type="submit" class="w-full py-3 bg-sparosa hover:bg-sparosahover text-spataupeoscuro font-bold text-sm rounded-xl transition border border-spataupe/40 shadow-sm">
@@ -946,7 +946,7 @@
     <div class="bg-spacrema w-full max-w-md rounded-3xl p-5 sm:p-6 border border-spaborde space-y-4 shadow-2xl">
       <div class="text-center space-y-1">
         <h4 class="font-serif text-xl font-bold text-spataupeoscuro">Conexión Backend Supabase</h4>
-        <p class="text-xs text-spataupe font-medium">Ingresa las credenciales de tu proyecto en Supabase</p>
+        <p class="text-xs text-spataupe font-medium">Ingresa o actualiza las credenciales globales de Supabase</p>
       </div>
 
       <form onsubmit="saveSupabaseCredentials(event)" class="space-y-3 text-xs">
@@ -960,12 +960,12 @@
         </div>
 
         <button type="submit" class="w-full py-3 bg-[#F5E6D3] hover:bg-[#EFE0CC] text-[#7A542D] font-bold rounded-xl transition border border-[#E3CBB0] shadow-sm">
-          Guardar y Conectar Realtime
+          Guardar Credenciales Globales
         </button>
       </form>
 
       <button onclick="closeModal('modal-supabase')" class="w-full text-center text-xs text-spataupe hover:text-spataupeoscuro font-semibold">
-        Cerrar (Usar Modo Local)
+        Cerrar
       </button>
     </div>
   </div>
@@ -975,12 +975,21 @@
   <!-- 6. LÓGICA JAVASCRIPT NATIVA SÍNCRONA Y SUPABASE REALTIME             -->
   <!-- ==================================================================== -->
   <script>
+    // REGISTRO DEL SERVICE WORKER PARA PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(err => console.log('SW register fail:', err));
       });
     }
 
+    // ====================================================================
+    // CREDENCIALES GLOBALES DEFAULT DE SUPABASE (CONEXIÓN EN LA NUBE AUTOMÁTICA)
+    // Conecta a todos los dispositivos (celulares y PC) sin configuración manual
+    // ====================================================================
+    const GLOBAL_SUPABASE_URL = "https://fltgbgiscqoyeyxbgfme.supabase.co";
+    const GLOBAL_SUPABASE_KEY = "sb_publishable_5PEjaQKVDjvegWkADuttDg_Rg6NGVTN";
+
+    // ESTADO GLOBAL DE LA APLICACIÓN
     const STATE = {
       services: [],
       appointments: [],
@@ -1091,16 +1100,18 @@
       localStorage.setItem('mo_blockouts', JSON.stringify(STATE.blockouts));
     }
 
+    // INICIALIZACIÓN DE SUPABASE (CONEXIÓN EN LA NUBE AUTOMÁTICA)
     function initSupabase() {
-      const url = localStorage.getItem('spb_url');
-      const key = localStorage.getItem('spb_key');
+      const url = localStorage.getItem('spb_url') || GLOBAL_SUPABASE_URL;
+      const key = localStorage.getItem('spb_key') || GLOBAL_SUPABASE_KEY;
 
-      if (url && key && window.supabase) {
+      if (url && key && window.supabase && url.startsWith('http')) {
         try {
           STATE.supabaseClient = window.supabase.createClient(url, key);
           document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-emerald-600 animate-pulse";
-          document.getElementById('status-text').innerText = "🟢 Conectado en Vivo (Supabase)";
+          document.getElementById('status-text').innerText = "🟢 Conectado en Vivo (Supabase Nube)";
 
+          // Suscribirse a cambios en tiempo real
           STATE.supabaseClient
             .channel('public:realtime')
             .on('postgres_changes', { event: '*', schema: 'public' }, () => fetchSupabaseData())
@@ -1110,6 +1121,9 @@
         } catch (e) {
           console.error("Error al conectar con Supabase:", e);
         }
+      } else {
+        document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-amber-600 animate-pulse";
+        document.getElementById('status-text').innerText = "⚠️ Modo Local (Falta Credencial)";
       }
     }
 
@@ -1117,7 +1131,7 @@
       if (!STATE.supabaseClient) return;
       try {
         const { data: s } = await STATE.supabaseClient.from('servicios').select('*');
-        if (s) STATE.services = s;
+        if (s && s.length > 0) STATE.services = s;
 
         const { data: c } = await STATE.supabaseClient.from('cupones').select('*');
         if (c) STATE.coupons = c;
@@ -1157,8 +1171,8 @@
     }
 
     function openSupabaseModal() {
-      document.getElementById('spb-url').value = localStorage.getItem('spb_url') || '';
-      document.getElementById('spb-key').value = localStorage.getItem('spb_key') || '';
+      document.getElementById('spb-url').value = localStorage.getItem('spb_url') || GLOBAL_SUPABASE_URL;
+      document.getElementById('spb-key').value = localStorage.getItem('spb_key') || GLOBAL_SUPABASE_KEY;
       openModal('modal-supabase');
     }
 
@@ -1171,6 +1185,7 @@
       localStorage.setItem('spb_key', key);
       closeModal('modal-supabase');
       initSupabase();
+      alert("✅ Credenciales guardadas. Ahora tu aplicación se conectará a Supabase en todos los dispositivos.");
     }
 
     function switchView(view) {
@@ -1858,7 +1873,6 @@
       });
     }
 
-    // ENVÍO DE NOTIFICACIONES WHATSAPP AL CAMBIAR ESTADO
     async function updateApptStatus(id, newStatus) {
       const appt = STATE.appointments.find(a => a.id === id);
       if (!appt) return;
