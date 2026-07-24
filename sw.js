@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skincare-mo-v1';
+const CACHE_NAME = 'skincare-mo-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -16,13 +16,14 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activación del Service Worker
+// Activación del Service Worker con borrado de cachés antiguas
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cache) => {
           if (cache !== CACHE_NAME) {
+            console.log('Borrando caché antigua:', cache);
             return caches.delete(cache);
           }
         })

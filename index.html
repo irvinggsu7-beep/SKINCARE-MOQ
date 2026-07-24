@@ -119,7 +119,7 @@
         <!-- Indicador Estado Supabase -->
         <button onclick="openSupabaseModal()" id="connection-status-btn" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#F5E6D3] text-[#7A542D] border border-[#E3CBB0] hover:bg-[#EFE0CC] transition shadow-sm">
           <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse" id="status-dot"></span>
-          <span id="status-text">Modo Local</span>
+          <span id="status-text">Conectando...</span>
         </button>
 
         <!-- Botón Volver a Reservar (Solo visible cuando se navega en Admin) -->
@@ -984,7 +984,6 @@
 
     // ====================================================================
     // CREDENCIALES GLOBALES DEFAULT DE SUPABASE (CONEXIÓN EN LA NUBE AUTOMÁTICA)
-    // Conecta a todos los dispositivos (celulares y PC) sin configuración manual
     // ====================================================================
     const GLOBAL_SUPABASE_URL = "https://fltgbgiscqoyeyxbgfme.supabase.co";
     const GLOBAL_SUPABASE_KEY = "sb_publishable_5PEjaQKVDjvegWkADuttDg_Rg6NGVTN";
@@ -1102,8 +1101,8 @@
 
     // INICIALIZACIÓN DE SUPABASE (CONEXIÓN EN LA NUBE AUTOMÁTICA)
     function initSupabase() {
-      const url = localStorage.getItem('spb_url') || GLOBAL_SUPABASE_URL;
-      const key = localStorage.getItem('spb_key') || GLOBAL_SUPABASE_KEY;
+      const url = GLOBAL_SUPABASE_URL;
+      const key = GLOBAL_SUPABASE_KEY;
 
       if (url && key && window.supabase && url.startsWith('http')) {
         try {
@@ -1130,7 +1129,8 @@
     async function fetchSupabaseData() {
       if (!STATE.supabaseClient) return;
       try {
-        const { data: s } = await STATE.supabaseClient.from('servicios').select('*');
+        const { data: s, error: errS } = await STATE.supabaseClient.from('servicios').select('*');
+        if (errS) console.warn("Supabase servicios notice:", errS);
         if (s && s.length > 0) STATE.services = s;
 
         const { data: c } = await STATE.supabaseClient.from('cupones').select('*');
@@ -1171,8 +1171,8 @@
     }
 
     function openSupabaseModal() {
-      document.getElementById('spb-url').value = localStorage.getItem('spb_url') || GLOBAL_SUPABASE_URL;
-      document.getElementById('spb-key').value = localStorage.getItem('spb_key') || GLOBAL_SUPABASE_KEY;
+      document.getElementById('spb-url').value = GLOBAL_SUPABASE_URL;
+      document.getElementById('spb-key').value = GLOBAL_SUPABASE_KEY;
       openModal('modal-supabase');
     }
 
