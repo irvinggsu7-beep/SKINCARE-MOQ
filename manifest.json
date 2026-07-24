@@ -1,0 +1,24 @@
+{
+  "name": "SKINCARE MO - Spa & Salud Integral",
+  "short_name": "SKINCARE MO",
+  "description": "Sistema profesional de reservación de citas y salud para SKINCARE MO.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FAF6F0",
+  "theme_color": "#FAF6F0",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

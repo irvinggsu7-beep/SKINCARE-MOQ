@@ -6,6 +6,15 @@
   <title>SKINCARE MO - Reservación de Citas & Salud</title>
   <meta name="description" content="Sistema profesional de reservación de citas en tiempo real para SKINCARE MO. Terapia Física, Salud y Bienestar.">
   
+  <!-- FAVICON & PWA APP ICONS PARA CELULARES (ANDROID & IOS) -->
+  <link rel="icon" type="image/png" href="assets/logo.png">
+  <link rel="apple-touch-icon" href="assets/logo.png">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#FAF6F0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="SKINCARE MO">
+
   <!-- Google Fonts & FontAwesome CDN -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -966,6 +975,13 @@
   <!-- 6. LÓGICA JAVASCRIPT NATIVA SÍNCRONA Y SUPABASE REALTIME             -->
   <!-- ==================================================================== -->
   <script>
+    // REGISTRO DEL SERVICE WORKER PARA PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => console.log('SW register fail:', err));
+      });
+    }
+
     // ESTADO GLOBAL DE LA APLICACIÓN
     const STATE = {
       services: [],
