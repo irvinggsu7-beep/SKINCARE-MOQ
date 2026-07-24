@@ -364,16 +364,24 @@
       <!-- PESTAÑA 1: AGENDA & CITAS -->
       <div id="admin-tab-agenda" class="space-y-6">
         
-        <!-- TARJETAS KPI (FINANCIERAS ACTUALIZADAS) -->
+        <!-- TARJETAS KPI (BOTÓN DE FINANZAS INTERACTIVO CON DESGLOSE RESICO) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <div class="glass-card p-3.5 sm:p-4 rounded-2xl space-y-1">
             <p class="text-xs text-spataupe font-bold uppercase">Total Citas</p>
             <p class="text-xl sm:text-2xl font-extrabold text-spataupeoscuro" id="kpi-total-citas">0</p>
           </div>
-          <div class="glass-card p-3.5 sm:p-4 rounded-2xl space-y-1">
-            <p class="text-xs text-spataupe font-bold uppercase">Ingresos Est. ($)</p>
-            <p class="text-xl sm:text-2xl font-extrabold text-spataupeoscuro" id="kpi-ingresos-est">$0.00</p>
+          
+          <!-- BOTÓN MÓDULO DE FINANZAS RESICO -->
+          <div onclick="openFinancesModal()" class="glass-card p-3.5 sm:p-4 rounded-2xl space-y-1 cursor-pointer hover:border-spataupe border-2 border-sparosa transition group relative" title="Hacer clic para abrir Módulo Financiero RESICO">
+            <div class="flex items-center justify-between">
+              <p class="text-xs text-spataupe font-bold uppercase flex items-center gap-1">
+                Ingresos Est. ($) <i class="fa-solid fa-[#2E5437] fa-chart-line text-[10px] text-emerald-600"></i>
+              </p>
+              <span class="text-[9px] bg-sparosa text-spataupeoscuro px-1.5 py-0.5 rounded font-bold">Ver RESICO 📊</span>
+            </div>
+            <p class="text-xl sm:text-2xl font-extrabold text-spataupeoscuro group-hover:text-pink-700 transition" id="kpi-ingresos-est">$0.00</p>
           </div>
+
           <div class="glass-card p-3.5 sm:p-4 rounded-2xl space-y-1">
             <p class="text-xs text-spataupe font-bold uppercase">Servicios Activos</p>
             <p class="text-xl sm:text-2xl font-extrabold text-[#2E5437]" id="kpi-servicios-activos">0</p>
@@ -638,7 +646,7 @@
   <!-- 5. MODALES INTERACTIVOS DE LA APLICACIÓN                            -->
   <!-- ==================================================================== -->
 
-  <!-- MODAL 1: FICHA DE DEPÓSITO DESCARGABLE & WHATSAPP -->
+  <!-- MODAL 1: FICHA DE DEPÓSITO DESCARGABLE & WHATSAPP (+52 735 163 2002) -->
   <div id="modal-deposit-receipt" class="fixed inset-0 z-50 bg-[#4A3731]/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-spacrema w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-spaborde space-y-4 max-h-[95vh] overflow-y-auto custom-scrollbar">
       
@@ -722,7 +730,144 @@
     </div>
   </div>
 
-  <!-- MODAL 2: CREAR / EDITAR SERVICIO -->
+  <!-- MODAL 2: MÓDULO DE CONTROL FINANCIERO (RESICO) -->
+  <div id="modal-finances" class="fixed inset-0 z-50 bg-[#4A3731]/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden">
+    <div class="bg-spacrema w-full max-w-5xl rounded-3xl p-5 sm:p-6 border border-spaborde space-y-5 shadow-2xl max-h-[92vh] overflow-y-auto custom-scrollbar">
+      
+      <!-- HEADER FINANZAS -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-spaborde pb-4">
+        <div>
+          <h4 class="font-serif text-xl font-bold text-spataupeoscuro flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-emerald-700"></i> Módulo de Control Financiero (RESICO)
+          </h4>
+          <p class="text-xs text-spatextosub">Desglose de anticipos electrónicos e ingresos por liquidación de servicios.</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="exportFinanceReportToExcel()" class="px-4 py-2 bg-[#3B6645] hover:bg-[#2E5437] text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md transition">
+            <i class="fa-solid fa-file-excel"></i> Descargar reporte Excel
+          </button>
+          <button onclick="closeModal('modal-finances')" class="p-2 text-spataupe hover:text-spataupeoscuro text-lg"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+
+      <!-- RESUMEN GLOBAL RESICO -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-spanav p-4 rounded-2xl border border-spaborde">
+        <div>
+          <p class="text-[11px] font-bold text-spataupe uppercase">Total Ingresos Globales</p>
+          <p class="text-lg font-extrabold text-spataupeoscuro" id="fin-total-global">$0.00 MXN</p>
+        </div>
+        <div>
+          <p class="text-[11px] font-bold text-spataupe uppercase">Subtotal (Sin IVA)</p>
+          <p class="text-lg font-extrabold text-spataupeoscuro" id="fin-subtotal-global">$0.00 MXN</p>
+        </div>
+        <div>
+          <p class="text-[11px] font-bold text-spataupe uppercase">IVA (16%)</p>
+          <p class="text-lg font-extrabold text-[#7A542D]" id="fin-iva-global">$0.00 MXN</p>
+        </div>
+        <div>
+          <p class="text-[11px] font-bold text-spataupe uppercase">Desglose Métodos</p>
+          <p class="text-xs font-bold text-spataupeoscuro" id="fin-methods-breakdown">📱 Electrónico: $0 | 💵 Efectivo: $0</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- CAJA 1: ANTICIPOS RECIBIDOS -->
+        <div class="glass-panel p-4 sm:p-5 rounded-2xl space-y-3 border border-spaborde">
+          <div class="flex items-center justify-between border-b border-spaborde pb-2">
+            <h5 class="font-serif font-bold text-spataupeoscuro text-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-[#7A542D] fa-building-columns text-amber-700"></i> Caja 1: Anticipos Recibidos ($150 MXN)
+            </h5>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E2F0E3] text-[#2E5437]">Método: Electrónico</span>
+          </div>
+
+          <!-- RESUMEN CAJA 1 -->
+          <div class="grid grid-cols-3 gap-2 bg-spasuperficie p-2.5 rounded-xl border border-spaborde text-center text-xs">
+            <div>
+              <p class="text-[10px] text-spataupe font-bold uppercase">Total Anticipos</p>
+              <p class="font-extrabold text-spataupeoscuro" id="box1-total">$0.00</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-spataupe font-bold uppercase">Subtotal (/ 1.16)</p>
+              <p class="font-bold text-spatextosub" id="box1-subtotal">$0.00</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-spataupe font-bold uppercase">IVA 16%</p>
+              <p class="font-bold text-[#7A542D]" id="box1-iva">$0.00</p>
+            </div>
+          </div>
+
+          <!-- TABLA CAJA 1 -->
+          <div class="overflow-x-auto custom-scrollbar max-h-56">
+            <table class="w-full text-left text-[11px]">
+              <thead class="bg-spanav text-spataupeoscuro uppercase font-bold sticky top-0">
+                <tr>
+                  <th class="p-2">Paciente</th>
+                  <th class="p-2">Fecha</th>
+                  <th class="p-2">Método</th>
+                  <th class="p-2 text-right">Subtotal</th>
+                  <th class="p-2 text-right">IVA</th>
+                  <th class="p-2 text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody id="box1-tbody" class="divide-y divide-spaborde text-spatextosub">
+                <!-- Javascript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CAJA 2: LIQUIDACIÓN DE SERVICIOS CONCLUIDOS -->
+        <div class="glass-panel p-4 sm:p-5 rounded-2xl space-y-3 border border-spaborde">
+          <div class="flex items-center justify-between border-b border-spaborde pb-2">
+            <h5 class="font-serif font-bold text-spataupeoscuro text-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-hand-holding-dollar text-emerald-700"></i> Caja 2: Liquidación de Servicios Concluidos
+            </h5>
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-[#EDE5F5] text-[#4F3B66]">Monto Remanente</span>
+          </div>
+
+          <!-- RESUMEN CAJA 2 -->
+          <div class="grid grid-cols-3 gap-2 bg-spasuperficie p-2.5 rounded-xl border border-spaborde text-center text-xs">
+            <div>
+              <p class="text-[10px] text-spataupe font-bold uppercase">Total Remanentes</p>
+              <p class="font-extrabold text-spataupeoscuro" id="box2-total">$0.00</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-spataupe font-bold uppercase">Subtotal (/ 1.16)</p>
+              <p class="font-bold text-spatextosub" id="box2-subtotal">$0.00</p>
+            </div>
+            <div>
+              <p class="text-[10px] text-spataupe font-bold uppercase">IVA 16%</p>
+              <p class="font-bold text-[#7A542D]" id="box2-iva">$0.00</p>
+            </div>
+          </div>
+
+          <!-- TABLA CAJA 2 -->
+          <div class="overflow-x-auto custom-scrollbar max-h-56">
+            <table class="w-full text-left text-[11px] min-w-[420px]">
+              <thead class="bg-spanav text-spataupeoscuro uppercase font-bold sticky top-0">
+                <tr>
+                  <th class="p-2">Paciente</th>
+                  <th class="p-2">Remanente</th>
+                  <th class="p-2">Subtotal</th>
+                  <th class="p-2">IVA 16%</th>
+                  <th class="p-2 text-right">Método Pago</th>
+                </tr>
+              </thead>
+              <tbody id="box2-tbody" class="divide-y divide-spaborde text-spatextosub">
+                <!-- Javascript -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 3: CREAR / EDITAR SERVICIO -->
   <div id="modal-service" class="fixed inset-0 z-50 bg-[#4A3731]/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-spacrema w-full max-w-md rounded-3xl p-5 sm:p-6 border border-spaborde space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-spaborde pb-3">
@@ -763,7 +908,7 @@
     </div>
   </div>
 
-  <!-- MODAL 3: AUTENTICACIÓN ADMIN -->
+  <!-- MODAL 4: AUTENTICACIÓN ADMIN -->
   <div id="modal-admin-auth" class="fixed inset-0 z-50 bg-[#4A3731]/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-spacrema w-full max-w-sm rounded-3xl p-5 sm:p-6 border border-spaborde space-y-4 shadow-2xl">
       <div class="text-center space-y-1">
@@ -787,7 +932,7 @@
     </div>
   </div>
 
-  <!-- MODAL 4: CONFIGURAR SUPABASE -->
+  <!-- MODAL 5: CONFIGURAR SUPABASE -->
   <div id="modal-supabase" class="fixed inset-0 z-50 bg-[#4A3731]/40 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 hidden">
     <div class="bg-spacrema w-full max-w-md rounded-3xl p-5 sm:p-6 border border-spaborde space-y-4 shadow-2xl">
       <div class="text-center space-y-1">
@@ -831,7 +976,8 @@
         admin_password: "0000",
         horario_apertura: "14:00",
         horario_cierre: "20:30",
-        dias_operativos: ["1", "2", "3", "4", "5", "6"]
+        dias_operativos: ["1", "2", "3", "4", "5", "6"],
+        whatsapp: "527351632002"
       },
       selectedServiceIds: [],
       appliedCoupon: null,
@@ -860,7 +1006,6 @@
       }
     }
 
-    // ACCESO DIRECTO DESDE LA URL (ej. #admin)
     function checkUrlHashForAdmin() {
       if (window.location.hash === '#admin') {
         handleAdminAccess();
@@ -879,7 +1024,6 @@
       { id: "c1", codigo: "BIENVENIDA10", tipo: "porcentaje", valor: 10.00, fecha_inicio: new Date().toISOString().split('T')[0], fecha_expiracion: new Date(Date.now() + 30*86400000).toISOString().split('T')[0], activo: true }
     ];
 
-    // FUNCIÓN DE FECHA EN ZONA HORARIA CDMX (GMT-6)
     function getCDMXDate() {
       const now = new Date();
       const cdmxStr = now.toLocaleString("en-US", { timeZone: "America/Mexico_City" });
@@ -910,7 +1054,6 @@
 
     window.addEventListener('hashchange', checkUrlHashForAdmin);
 
-    // SISTEMA DE ALMACENAMIENTO (LOCALSTORAGE + SUPABASE)
     function initStorage() {
       const storedConfig = localStorage.getItem('mo_config');
       if (storedConfig) STATE.config = JSON.parse(storedConfig);
@@ -936,7 +1079,6 @@
       localStorage.setItem('mo_blockouts', JSON.stringify(STATE.blockouts));
     }
 
-    // CONEXIÓN SUPABASE REALTIME
     function initSupabase() {
       const url = localStorage.getItem('spb_url');
       const key = localStorage.getItem('spb_key');
@@ -1004,7 +1146,6 @@
       initSupabase();
     }
 
-    // CONMUTACIÓN DE VISTAS Y NAVEGACIÓN
     function switchView(view) {
       if (view === 'admin' && !STATE.isAdminAuthenticated) {
         openModal('modal-admin-auth');
@@ -1060,7 +1201,6 @@
       });
     }
 
-    // RENDERIZADO Y GESTIÓN DE SERVICIOS
     function renderServicesGrid() {
       const grid = document.getElementById('services-grid');
       grid.innerHTML = '';
@@ -1166,7 +1306,6 @@
       document.getElementById('summary-total').innerText = `$${total.toFixed(2)} MXN`;
     }
 
-    // MODAL DE AGREGAR / EDITAR SERVICIO
     function openServiceModal(serviceId = null) {
       const title = document.getElementById('service-modal-title');
       if (serviceId) {
@@ -1235,7 +1374,7 @@
       renderServicesGrid();
       renderAdminServices();
       calculateAvailableSlots();
-      alert("✅ Servicio guardado con éxito. Se actualizó el catálogo en tiempo real.");
+      alert("✅ Servicio guardado con éxito.");
     }
 
     async function deleteService(id) {
@@ -1252,7 +1391,6 @@
       calculateAvailableSlots();
     }
 
-    // COMPONENTE DE CALENDARIO INTERACTIVO (ZONA HORARIA CDMX GMT-6)
     function renderCalendar() {
       const grid = document.getElementById('calendar-days-grid');
       grid.innerHTML = '';
@@ -1270,13 +1408,11 @@
       const cdmxNow = getCDMXDate();
       const cdmxTodayStr = cdmxNow.toISOString().split('T')[0];
 
-      // Días de relleno anterior
       for (let i = 0; i < firstDayOfMonth; i++) {
         const dummy = document.createElement('div');
         grid.appendChild(dummy);
       }
 
-      // Días del mes
       for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
         const dayObj = new Date(year, month, d);
@@ -1322,7 +1458,6 @@
       renderCalendar();
     }
 
-    // ALGORITMO DE DISPONIBILIDAD DE HORARIOS EN TIEMPO REAL
     function updateOperatingHoursDisplay() {
       const open = STATE.config.horario_apertura || "14:00";
       const close = STATE.config.horario_cierre || "20:30";
@@ -1371,12 +1506,10 @@
         const endMin = endTimeInMin % 60;
         const endTimeStr = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
 
-        // Validación 1: Mínimo 2 horas y 1 minuto (121 min) de anticipación en hora CDMX
         if (isToday && (time - currentMinutes < 121)) {
           continue;
         }
 
-        // Validación 2: Empalme con citas existentes (no canceladas)
         const hasApptCollision = STATE.appointments.some(a => {
           if (a.fecha !== dateVal || a.estado === 'cancelada') return false;
           const aStart = timeToMinutes(a.hora_inicio);
@@ -1386,7 +1519,6 @@
 
         if (hasApptCollision) continue;
 
-        // Validación 3: Empalme con bloqueos de agenda
         const hasBlockCollision = STATE.blockouts.some(b => {
           if (b.fecha !== dateVal) return false;
           const bStart = timeToMinutes(b.hora_inicio);
@@ -1396,7 +1528,6 @@
 
         if (hasBlockCollision) continue;
 
-        // Slot válido
         availableCount++;
         const isSelected = STATE.selectedSlot === timeStr;
         const btn = document.createElement('button');
@@ -1428,7 +1559,6 @@
       return h * 60 + m;
     }
 
-    // CUPONES & VIGENCIAS
     function applyCoupon() {
       const code = document.getElementById('coupon-code').value.trim().toUpperCase();
       const statusEl = document.getElementById('coupon-status');
@@ -1477,7 +1607,6 @@
       updateSummary();
     }
 
-    // CONFIRMACIÓN DE CITA & GENERACIÓN DE FICHA DE DEPÓSITO
     async function confirmBooking() {
       if (STATE.selectedServiceIds.length === 0) {
         alert("⚠️ Selecciona al menos 1 tratamiento.");
@@ -1545,6 +1674,7 @@
         limite_pago: paymentDeadline.toISOString(),
         tipo_tolerancia: toleranceType,
         estado: 'pendiente',
+        metodo_liquidacion: 'Electronico',
         creado_en: now.toISOString()
       };
 
@@ -1580,7 +1710,7 @@
       );
 
       const waBtn = document.getElementById('btn-whatsapp-action');
-      waBtn.href = `https://wa.me/527772148451?text=${msg}`;
+      waBtn.href = `https://wa.me/527351632002?text=${msg}`;
 
       openModal('modal-deposit-receipt');
     }
@@ -1652,12 +1782,12 @@
 
         const isExpired = new Date(appt.limite_pago).getTime() < Date.now() && appt.estado === 'pendiente';
         
-        let statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F5E6D3] text-[#7A542D] border border-[#E3CBB0]">Pendiente</span>`;
-        if (appt.estado === 'confirmada') statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#E2F0E3] text-[#2E5437] border border-[#B9DCBC]">Confirmada ($150)</span>`;
-        if (appt.estado === 'completada') statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EDE5F5] text-[#4F3B66] border border-[#D1C3E2]">Concluida ($${parseFloat(appt.total).toFixed(2)})</span>`;
-        if (appt.estado === 'no_acudio') statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#FDEEE3] text-[#9E4A1E] border border-[#F3CDAE]">No Acudió ($150)</span>`;
-        if (appt.estado === 'cancelada') statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#F8E2E2] text-[#9E3D3D] border border-[#ECC0C0]">Cancelada</span>`;
-        if (isExpired) statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#EFEAE5] text-spataupe border border-spaborde">Expirado</span>`;
+        let statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F5E6D3] text-[#7A542D] border border-[#E3CBB0]">Pendiente</span>`;
+        if (appt.estado === 'confirmada') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E2F0E3] text-[#2E5437] border border-[#B9DCBC]">Confirmada ($150)</span>`;
+        if (appt.estado === 'completada') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#EDE5F5] text-[#4F3B66] border border-[#D1C3E2]">Concluida ($${parseFloat(appt.total).toFixed(2)})</span>`;
+        if (appt.estado === 'no_acudio') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDEEE3] text-[#9E4A1E] border border-[#F3CDAE]">No Acudió ($150)</span>`;
+        if (appt.estado === 'cancelada') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F8E2E2] text-[#9E3D3D] border border-[#ECC0C0]">Cancelada</span>`;
+        if (isExpired) statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#EFEAE5] text-spataupe border border-spaborde">Expirado</span>`;
 
         tr.innerHTML = `
           <td class="p-3 font-bold text-spataupeoscuro">
@@ -1725,6 +1855,187 @@
         msg = `SKINCARE MO: Hola, ${appt.cliente_nombre}. 😔 Lamentamos mucho no haber podido confirmar tu cita de hoy por falta de pago a tiempo. Para mantener la calidad y puntualidad de nuestros servicios, liberamos el espacio. Si aún deseas acudir, con gusto puedes volver a realizar tu cita en un horario disponible. ¡Quedamos al pendiente! ✨`;
         window.open(`https://wa.me/${appt.cliente_telefono}?text=${encodeURIComponent(msg)}`, '_blank');
       }
+    }
+
+    // MÓDULO DE CONTROL FINANCIERO RESICO
+    function openFinancesModal() {
+      renderFinancesTables();
+      openModal('modal-finances');
+    }
+
+    function renderFinancesTables() {
+      // CAJA 1: ANTICIPOS RECIBIDOS ($150)
+      const box1Tbody = document.getElementById('box1-tbody');
+      box1Tbody.innerHTML = '';
+
+      const anticipoAppts = STATE.appointments.filter(a => ['confirmada', 'completada', 'no_acudio'].includes(a.estado));
+      let totalAnticipos = 0;
+
+      anticipoAppts.forEach(a => {
+        const anticipoMonto = 150.00;
+        totalAnticipos += anticipoMonto;
+        const subtotal = anticipoMonto / 1.16;
+        const iva = anticipoMonto - subtotal;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-2 font-bold text-spataupeoscuro">${a.cliente_nombre}</td>
+          <td class="p-2 text-spatextosub font-medium">${a.fecha}</td>
+          <td class="p-2 font-semibold text-[#2E5437]">Electrónico</td>
+          <td class="p-2 text-right">$${subtotal.toFixed(2)}</td>
+          <td class="p-2 text-right">$${iva.toFixed(2)}</td>
+          <td class="p-2 text-right font-bold text-spataupeoscuro">$${anticipoMonto.toFixed(2)}</td>
+        `;
+        box1Tbody.appendChild(tr);
+      });
+
+      const box1Subtotal = totalAnticipos / 1.16;
+      const box1Iva = totalAnticipos - box1Subtotal;
+
+      document.getElementById('box1-total').innerText = `$${totalAnticipos.toFixed(2)} MXN`;
+      document.getElementById('box1-subtotal').innerText = `$${box1Subtotal.toFixed(2)} MXN`;
+      document.getElementById('box1-iva').innerText = `$${box1Iva.toFixed(2)} MXN`;
+
+      // CAJA 2: LIQUIDACIÓN DE SERVICIOS CONCLUIDOS (MONTO REMANENTE)
+      const box2Tbody = document.getElementById('box2-tbody');
+      box2Tbody.innerHTML = '';
+
+      const concluidasAppts = STATE.appointments.filter(a => a.estado === 'completada');
+      let totalRemanentes = 0;
+      let totalElecRemanente = 0;
+      let totalEfecRemanente = 0;
+
+      concluidasAppts.forEach(a => {
+        const remanente = Math.max(0, parseFloat(a.total) - 150.00);
+        totalRemanentes += remanente;
+        const subtotal = remanente / 1.16;
+        const iva = remanente - subtotal;
+
+        const metodoActual = a.metodo_liquidacion || 'Electronico';
+        if (metodoActual === 'Efectivo') totalEfecRemanente += remanente;
+        else totalElecRemanente += remanente;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-2 font-bold text-spataupeoscuro">
+            ${a.cliente_nombre}
+            <div class="text-[9px] text-spataupe">${a.servicios_nombres}</div>
+          </td>
+          <td class="p-2 font-bold text-spataupeoscuro">$${remanente.toFixed(2)}</td>
+          <td class="p-2 text-spatextosub">$${subtotal.toFixed(2)}</td>
+          <td class="p-2 text-spatextosub">$${iva.toFixed(2)}</td>
+          <td class="p-2 text-right">
+            <select onchange="changePaymentMethod('${a.id}', this.value)" class="bg-spainput border border-spaborde rounded px-1.5 py-0.5 text-[10px] font-bold text-spataupeoscuro">
+              <option value="Electronico" ${metodoActual === 'Electronico' ? 'selected' : ''}>Electrónico</option>
+              <option value="Efectivo" ${metodoActual === 'Efectivo' ? 'selected' : ''}>Efectivo</option>
+            </select>
+          </td>
+        `;
+        box2Tbody.appendChild(tr);
+      });
+
+      const box2Subtotal = totalRemanentes / 1.16;
+      const box2Iva = totalRemanentes - box2Subtotal;
+
+      document.getElementById('box2-total').innerText = `$${totalRemanentes.toFixed(2)} MXN`;
+      document.getElementById('box2-subtotal').innerText = `$${box2Subtotal.toFixed(2)} MXN`;
+      document.getElementById('box2-iva').innerText = `$${box2Iva.toFixed(2)} MXN`;
+
+      // RESUMEN GLOBAL COMBINADO RESICO
+      const grandTotal = totalAnticipos + totalRemanentes;
+      const grandSubtotal = grandTotal / 1.16;
+      const grandIva = grandTotal - grandSubtotal;
+
+      const grandElec = totalAnticipos + totalElecRemanente;
+      const grandEfec = totalEfecRemanente;
+
+      document.getElementById('fin-total-global').innerText = `$${grandTotal.toFixed(2)} MXN`;
+      document.getElementById('fin-subtotal-global').innerText = `$${grandSubtotal.toFixed(2)} MXN`;
+      document.getElementById('fin-iva-global').innerText = `$${grandIva.toFixed(2)} MXN`;
+      document.getElementById('fin-methods-breakdown').innerText = `📱 Electrónico: $${grandElec.toFixed(2)} | 💵 Efectivo: $${grandEfec.toFixed(2)}`;
+    }
+
+    async function changePaymentMethod(apptId, newMethod) {
+      const appt = STATE.appointments.find(a => a.id === apptId);
+      if (appt) {
+        appt.metodo_liquidacion = newMethod;
+        saveLocalState();
+
+        if (STATE.supabaseClient) {
+          await STATE.supabaseClient.from('citas').update({ metodo_liquidacion: newMethod }).eq('id', apptId);
+        }
+        renderFinancesTables();
+      }
+    }
+
+    function exportFinanceReportToExcel() {
+      const cdmxToday = getCDMXDate().toISOString().split('T')[0];
+      let csvContent = "\uFEFF"; // UTF-8 BOM para soporte de acentos en Excel
+
+      csvContent += "========================================================================================\n";
+      csvContent += `SKINCARE MO - REPORTE CONTROL FINANCIERO RESICO (${cdmxToday})\n`;
+      csvContent += "========================================================================================\n\n";
+
+      // SECCIÓN 1: CAJA 1 ANTICIPOS RECIBIDOS
+      csvContent += "SECCIN 1: CAJA 1 - ANTICIPOS RECIBIDOS ($150 MXN OPENBANK / ELECTRONICO)\n";
+      csvContent += "Fecha,Paciente,Codigo Cita,Concepto,Metodo Pago,Subtotal,IVA (16%),Total Anticipo\n";
+
+      const anticipoAppts = STATE.appointments.filter(a => ['confirmada', 'completada', 'no_acudio'].includes(a.estado));
+      let sumAnticipos = 0;
+
+      anticipoAppts.forEach(a => {
+        const total = 150.00;
+        sumAnticipos += total;
+        const sub = total / 1.16;
+        const iva = total - sub;
+        csvContent += `"${a.fecha}","${a.cliente_nombre}","${a.codigo_cita}","Anticipo Obligatorio $150","Electronico",${sub.toFixed(2)},${iva.toFixed(2)},${total.toFixed(2)}\n`;
+      });
+
+      const subAnticipos = sumAnticipos / 1.16;
+      const ivaAnticipos = sumAnticipos - subAnticipos;
+      csvContent += `,,TOTALES ANTICIPOS,,Electronico,${subAnticipos.toFixed(2)},${ivaAnticipos.toFixed(2)},${sumAnticipos.toFixed(2)}\n\n`;
+
+      // SECCIÓN 2: CAJA 2 LIQUIDACIÓN DE SERVICIOS CONCLUIDOS
+      csvContent += "SECCION 2: CAJA 2 - LIQUIDACION DE SERVICIOS CONCLUIDOS (REMANENTE)\n";
+      csvContent += "Fecha,Paciente,Codigo Cita,Servicios Otorgados,Metodo Pago,Remanente Pagado,Subtotal Remanente,IVA 16%,Total Servicio Cita\n";
+
+      const concluidasAppts = STATE.appointments.filter(a => a.estado === 'completada');
+      let sumRemanentes = 0;
+
+      concluidasAppts.forEach(a => {
+        const remanente = Math.max(0, parseFloat(a.total) - 150.00);
+        sumRemanentes += remanente;
+        const sub = remanente / 1.16;
+        const iva = remanente - sub;
+        const metodo = a.metodo_liquidacion || 'Electronico';
+        csvContent += `"${a.fecha}","${a.cliente_nombre}","${a.codigo_cita}","${a.servicios_nombres}","${metodo}",${remanente.toFixed(2)},${sub.toFixed(2)},${iva.toFixed(2)},${parseFloat(a.total).toFixed(2)}\n`;
+      });
+
+      const subRemanentes = sumRemanentes / 1.16;
+      const ivaRemanentes = sumRemanentes - subRemanentes;
+      csvContent += `,,,,TOTALES REMANENTES,${sumRemanentes.toFixed(2)},${subRemanentes.toFixed(2)},${ivaRemanentes.toFixed(2)},\n\n`;
+
+      // RESUMEN CONSOLIDADO RESICO
+      const grandTotal = sumAnticipos + sumRemanentes;
+      const grandSubtotal = grandTotal / 1.16;
+      const grandIva = grandTotal - grandSubtotal;
+
+      csvContent += "========================================================================================\n";
+      csvContent += "RESUMEN GLOBAL RESICO PARA DECLARACION DE IMPUESTOS\n";
+      csvContent += "========================================================================================\n";
+      csvContent += `Total Ingresos Brutos Globales:,$${grandTotal.toFixed(2)} MXN\n`;
+      csvContent += `Total Subtotal (Base Gravable Sin IVA):,$${grandSubtotal.toFixed(2)} MXN\n`;
+      csvContent += `Total IVA Trasladado (16%):,$${grandIva.toFixed(2)} MXN\n`;
+
+      // DESCARGA DEL ARCHIVO CSV / EXCEL
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", `Reporte-Financiero-RESICO-SkincareMO-${cdmxToday}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     }
 
     async function deleteAppointment(id) {
@@ -1797,7 +2108,6 @@
       });
     }
 
-    // ACCIONES DE CONFIGURACIÓN ADMIN
     function renderConfigBlockoutsList() {
       const list = document.getElementById('config-blockouts-list');
       list.innerHTML = '';
