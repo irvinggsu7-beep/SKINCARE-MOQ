@@ -22,17 +22,15 @@
       theme: {
         extend: {
           colors: {
-            brand: {
-              50: '#fdf2f8',
-              100: '#fce7f3',
-              200: '#fbcfe8',
-              400: '#f472b6',
-              500: '#ec4899',
-              600: '#db2777',
-              700: '#be185d',
-              800: '#9d174d',
-              dark: '#1e1018',
-            }
+            spacrema: '#FDFDF2',      // Fondo Principal: Crema muy claro / Marfil suave
+            spasuperficie: '#FAF7F0', // Tarjetas / Superficies
+            sparosa: '#F4E0E0',       // Color de Acento Principal: Rosa Pálido / Polvo
+            sparosahover: '#E8CECE',  // Hover del Rosa Pálido
+            spataupe: '#C4A79A',      // Acento Secundario: Taupe Suave / Greige
+            spataupeoscuro: '#8C746A',// Texto Principal / Títulos: Taupe Oscuro / Café Suave
+            spatextosub: '#5C4A42',   // Texto de cuerpo
+            spaborde: '#EBE3DA',      // Separadores suaves
+            spainput: '#FFFDF9',      // Fondo de formularios
           },
           fontFamily: {
             sans: ['Outfit', 'sans-serif'],
@@ -45,23 +43,23 @@
 
   <style>
     body {
-      background: #0f080c;
-      color: #f3f4f6;
+      background-color: #FDFDF2;
+      color: #5C4A42;
       font-family: 'Outfit', sans-serif;
     }
     .glass-panel {
-      background: rgba(26, 15, 23, 0.75);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(244, 114, 182, 0.15);
+      background: #FAF7F0;
+      border: 1px solid #EBE3DA;
+      box-shadow: 0 10px 30px -5px rgba(140, 116, 106, 0.05);
     }
     .glass-card {
-      background: rgba(35, 20, 31, 0.6);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(244, 114, 182, 0.12);
+      background: #FFFDF9;
+      border: 1px solid #EBE3DA;
+      box-shadow: 0 4px 15px rgba(140, 116, 106, 0.04);
       transition: all 0.25s ease-in-out;
     }
     .glass-card:hover {
-      border-color: rgba(244, 114, 182, 0.4);
+      border-color: #C4A79A;
       transform: translateY(-2px);
     }
     .custom-scrollbar::-webkit-scrollbar {
@@ -69,10 +67,10 @@
       height: 6px;
     }
     .custom-scrollbar::-webkit-scrollbar-track {
-      background: rgba(15, 8, 12, 0.5);
+      background: #FAF7F0;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-      background: #db2777;
+      background: #C4A79A;
       border-radius: 999px;
     }
     .calendar-day-btn {
@@ -89,33 +87,33 @@
   <!-- ==================================================================== -->
   <!-- 1. ENCABEZADO GLOBAL (HEADER DE NAVEGACIÓN)                          -->
   <!-- ==================================================================== -->
-  <header class="sticky top-0 z-40 glass-panel border-b border-pink-900/30">
+  <header class="sticky top-0 z-40 bg-[#FDFDF2]/90 backdrop-blur-md border-b border-spaborde">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
       
       <!-- Identidad de Marca -->
       <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('client')">
-        <img src="assets/logo.png" alt="SKINCARE MO" class="h-12 w-12 rounded-full object-cover border-2 border-pink-500 shadow-lg shadow-pink-500/20" onerror="this.src='https://ui-avatars.com/api/?name=Skincare+MO&background=db2777&color=fff'">
+        <img src="assets/logo.png" alt="SKINCARE MO" class="h-12 w-12 rounded-full object-cover border-2 border-spataupe shadow-sm" onerror="this.src='https://ui-avatars.com/api/?name=Skincare+MO&background=F4E0E0&color=8C746A'">
         <div>
-          <h1 class="font-serif font-bold text-xl sm:text-2xl text-white tracking-wide flex items-center gap-2">
-            SKINCARE MO <span class="text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30">SPA</span>
+          <h1 class="font-serif font-bold text-xl sm:text-2xl text-spataupeoscuro tracking-wide flex items-center gap-2">
+            SKINCARE MO <span class="text-xs font-sans font-medium px-2.5 py-0.5 rounded-full bg-sparosa text-spataupeoscuro border border-spataupe/30">SPA</span>
           </h1>
-          <p class="text-xs text-pink-300/80 font-light">Terapia Física, Salud y Bienestar</p>
+          <p class="text-xs text-spataupe font-light">Terapia Física, Salud y Bienestar</p>
         </div>
       </div>
 
       <!-- Estado de Conexión & Acceso de Usuarios -->
       <div class="flex items-center space-x-3 sm:space-x-4">
-        <button onclick="openSupabaseModal()" id="connection-status-btn" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition">
-          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse" id="status-dot"></span>
+        <button onclick="openSupabaseModal()" id="connection-status-btn" class="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium bg-[#F5E6D3] text-[#8C6239] border border-[#E8D1B5] hover:bg-[#EFE0CC] transition">
+          <span class="w-2 h-2 rounded-full bg-amber-600 animate-pulse" id="status-dot"></span>
           <span id="status-text">Modo Local (Configurar Supabase)</span>
         </button>
 
-        <button onclick="switchView('client')" id="btn-view-client" class="px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-pink-600/30 text-pink-200 border border-pink-500/40 hover:bg-pink-600/50 transition flex items-center gap-2">
-          <i class="fa-solid fa-calendar-check text-pink-400"></i> Reservar Cita
+        <button onclick="switchView('client')" id="btn-view-client" class="px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-sparosa text-spataupeoscuro border border-spataupe/40 hover:bg-sparosahover transition flex items-center gap-2 shadow-sm">
+          <i class="fa-solid fa-calendar-check text-spataupeoscuro"></i> Reservar Cita
         </button>
 
-        <button onclick="handleAdminAccess()" id="btn-view-admin" class="px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-zinc-800 text-zinc-300 border border-zinc-700 hover:bg-zinc-700 transition flex items-center gap-2">
-          <i class="fa-solid fa-user-shield text-zinc-400" id="admin-icon"></i> <span id="admin-btn-label">Acceso Admin</span>
+        <button onclick="handleAdminAccess()" id="btn-view-admin" class="px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-spasuperficie text-spatextosub border border-spaborde hover:bg-sparosa/50 transition flex items-center gap-2">
+          <i class="fa-solid fa-user-shield text-spataupe" id="admin-icon"></i> <span id="admin-btn-label">Acceso Admin</span>
         </button>
       </div>
     </div>
@@ -124,23 +122,23 @@
   <!-- ==================================================================== -->
   <!-- 2. BARRA DE CONTROL PRINCIPAL (TOP BAR DEL ADMIN)                   -->
   <!-- ==================================================================== -->
-  <div id="admin-topbar" class="hidden bg-zinc-900/90 border-b border-pink-500/20 py-3 px-4 sm:px-8">
+  <div id="admin-topbar" class="hidden bg-[#FAF7F0] border-b border-spaborde py-3 px-4 sm:px-8">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-3">
-        <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
-        <h2 class="text-sm sm:text-base font-semibold text-white tracking-wide flex items-center gap-2">
-          Panel de Control Administrativo <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/40">Autenticado</span>
+        <span class="w-3 h-3 rounded-full bg-emerald-600 animate-ping"></span>
+        <h2 class="text-sm sm:text-base font-semibold text-spataupeoscuro tracking-wide flex items-center gap-2">
+          Panel de Control Administrativo <span class="text-xs bg-[#E6F0E6] text-[#3D6647] px-2.5 py-0.5 rounded-full border border-[#C5DEC7]">Autenticado</span>
         </h2>
       </div>
 
       <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
-        <button onclick="openServiceModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-pink-600 text-white hover:bg-pink-500 transition shadow-md shadow-pink-600/30 flex items-center gap-1.5">
+        <button onclick="openServiceModal()" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-sparosa text-spataupeoscuro hover:bg-sparosahover border border-spataupe/30 transition shadow-sm flex items-center gap-1.5">
           <i class="fa-solid fa-plus"></i> + Nuevo Servicio
         </button>
-        <button onclick="switchAdminTab('configuracion')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 text-white hover:bg-amber-500 transition shadow-md shadow-amber-600/30 flex items-center gap-1.5">
+        <button onclick="switchAdminTab('configuracion')" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-[#F5E6D3] text-[#8C6239] hover:bg-[#EFE0CC] border border-[#E8D1B5] transition shadow-sm flex items-center gap-1.5">
           <i class="fa-solid fa-ban"></i> 🚫 Bloquear Horario
         </button>
-        <button onclick="logoutAdmin()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700 transition flex items-center gap-1.5">
+        <button onclick="logoutAdmin()" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-spasuperficie text-spatextosub hover:bg-spaborde border border-spaborde transition flex items-center gap-1.5">
           <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
         </button>
       </div>
@@ -155,20 +153,18 @@
     <!-- ==================================================================== -->
     <div id="view-client" class="space-y-8">
       
-      <!-- HERO BANNER -->
-      <div class="relative overflow-hidden rounded-3xl glass-panel p-8 sm:p-12 border border-pink-500/20 text-center space-y-4">
-        <div class="absolute -top-24 -left-24 w-72 h-72 bg-pink-600/20 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+      <!-- HERO BANNER (SPA SOFT BEAUTIFUL GRADIENT) -->
+      <div class="relative overflow-hidden rounded-3xl glass-panel p-8 sm:p-12 text-center space-y-4 border border-spaborde bg-gradient-to-b from-sparosa/40 to-spasuperficie">
         
-        <span class="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-pink-500/10 text-pink-300 border border-pink-500/30">
+        <span class="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-spacrema text-spataupeoscuro border border-spaborde shadow-sm">
           ✨ Spa & Salud Integral
         </span>
         
-        <h2 class="font-serif text-3xl sm:text-5xl font-bold text-white max-w-3xl mx-auto leading-tight">
+        <h2 class="font-serif text-3xl sm:text-5xl font-bold text-spataupeoscuro max-w-3xl mx-auto leading-tight">
           "Tu salud y bienestar merecen la mejor atención."
         </h2>
         
-        <p class="text-sm sm:text-base text-zinc-300 max-w-xl mx-auto font-light">
+        <p class="text-sm sm:text-base text-spatextosub max-w-xl mx-auto font-light">
           Selecciona tus tratamientos favoritos, elige la hora de tu preferencia y confirma tu reservación en tiempo real en solo 3 pasos.
         </p>
       </div>
@@ -181,11 +177,11 @@
           <!-- PASO 1: SELECCIÓN DUAL DE TRATAMIENTOS -->
           <div class="glass-panel p-6 rounded-2xl space-y-4">
             <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold text-white flex items-center gap-2">
-                <span class="w-7 h-7 rounded-full bg-pink-600 text-white flex items-center justify-center text-xs font-bold">1</span>
+              <h3 class="text-lg font-semibold text-spataupeoscuro flex items-center gap-2">
+                <span class="w-7 h-7 rounded-full bg-sparosa text-spataupeoscuro flex items-center justify-center text-xs font-bold border border-spataupe/30">1</span>
                 Selecciona tu Tratamiento
               </h3>
-              <span class="text-xs text-pink-300 bg-pink-950/60 px-2.5 py-1 rounded-full border border-pink-800/40" id="selected-count-badge">
+              <span class="text-xs text-spataupeoscuro bg-sparosa/60 px-3 py-1 rounded-full border border-spataupe/30 font-medium" id="selected-count-badge">
                 0 / 2 Seleccionados
               </span>
             </div>
@@ -198,26 +194,26 @@
 
           <!-- PASO 2: SELECCIÓN DE FECHA Y HORARIO CON CALENDARIO INTERACTIVO -->
           <div class="glass-panel p-6 rounded-2xl space-y-6">
-            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
-              <span class="w-7 h-7 rounded-full bg-pink-600 text-white flex items-center justify-center text-xs font-bold">2</span>
+            <h3 class="text-lg font-semibold text-spataupeoscuro flex items-center gap-2">
+              <span class="w-7 h-7 rounded-full bg-sparosa text-spataupeoscuro flex items-center justify-center text-xs font-bold border border-spataupe/30">2</span>
               Selecciona Fecha y Horario Disponible (Zona CDMX GMT-6)
             </h3>
 
             <!-- COMPONENTE DE CALENDARIO -->
-            <div class="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-4 sm:p-6 space-y-4">
+            <div class="bg-spainput border border-spaborde rounded-2xl p-4 sm:p-6 space-y-4 shadow-sm">
               <!-- Cabecera del Calendario -->
               <div class="flex items-center justify-between">
-                <button onclick="changeCalendarMonth(-1)" class="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-xs transition">
+                <button onclick="changeCalendarMonth(-1)" class="p-2 rounded-lg bg-spasuperficie hover:bg-sparosa text-spataupeoscuro text-xs border border-spaborde transition">
                   <i class="fa-solid fa-chevron-left"></i>
                 </button>
-                <h4 class="font-serif font-bold text-white text-base sm:text-lg" id="calendar-month-year">Julio 2026</h4>
-                <button onclick="changeCalendarMonth(1)" class="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white text-xs transition">
+                <h4 class="font-serif font-bold text-spataupeoscuro text-base sm:text-lg" id="calendar-month-year">Julio 2026</h4>
+                <button onclick="changeCalendarMonth(1)" class="p-2 rounded-lg bg-spasuperficie hover:bg-sparosa text-spataupeoscuro text-xs border border-spaborde transition">
                   <i class="fa-solid fa-chevron-right"></i>
                 </button>
               </div>
 
               <!-- Días de la Semana -->
-              <div class="grid grid-cols-7 text-center text-xs font-semibold text-pink-300/80 border-b border-zinc-800 pb-2">
+              <div class="grid grid-cols-7 text-center text-xs font-semibold text-spataupe border-b border-spaborde pb-2">
                 <span>Dom</span><span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span>
               </div>
 
@@ -229,53 +225,53 @@
 
             <!-- HORARIOS OPERATIVOS Y FRANZAS DISPONIBLES -->
             <div class="space-y-3">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-pink-300 gap-1">
-                <span class="flex items-center gap-1.5">
-                  <i class="fa-solid fa-clock"></i> Horario habitual: <strong id="operating-hours-display">14:00 a 20:30 hrs</strong>
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-spataupeoscuro gap-1">
+                <span class="flex items-center gap-1.5 font-medium">
+                  <i class="fa-solid fa-clock text-spataupe"></i> Horario habitual: <strong id="operating-hours-display">14:00 a 20:30 hrs</strong>
                 </span>
-                <span id="selected-date-label" class="font-semibold text-white">Fecha seleccionada: Ninguna</span>
+                <span id="selected-date-label" class="font-semibold text-spataupeoscuro">Fecha seleccionada: Ninguna</span>
               </div>
 
               <div id="time-slots-container" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-48 overflow-y-auto p-1 custom-scrollbar">
-                <p class="col-span-full text-xs text-zinc-500 text-center py-4">Selecciona primero un día en el calendario superior.</p>
+                <p class="col-span-full text-xs text-spataupe text-center py-4">Selecciona primero un día en el calendario superior.</p>
               </div>
 
-              <p class="text-[11px] text-zinc-400 flex items-center gap-1.5 italic">
-                <i class="fa-solid fa-circle-info text-pink-400"></i> Horario ajustado a Zona CDMX (GMT-6). Se requieren al menos 2 horas de anticipación.
+              <p class="text-[11px] text-spataupe flex items-center gap-1.5 italic">
+                <i class="fa-solid fa-circle-info text-spataupeoscuro"></i> Horario ajustado a Zona CDMX (GMT-6). Se requieren al menos 2 horas de anticipación.
               </p>
             </div>
           </div>
 
           <!-- PASO 3: DATOS DEL PACIENTE & CUPÓN -->
           <div class="glass-panel p-6 rounded-2xl space-y-4">
-            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
-              <span class="w-7 h-7 rounded-full bg-pink-600 text-white flex items-center justify-center text-xs font-bold">3</span>
+            <h3 class="text-lg font-semibold text-spataupeoscuro flex items-center gap-2">
+              <span class="w-7 h-7 rounded-full bg-sparosa text-spataupeoscuro flex items-center justify-center text-xs font-bold border border-spataupe/30">3</span>
               Datos del Paciente & Promoción
             </h3>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-medium text-zinc-400 mb-1">Nombre Completo *</label>
-                <input type="text" id="client-name" placeholder="Ej. Mariela Quintana" class="w-full bg-zinc-900/80 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500 transition">
+                <label class="block text-xs font-medium text-spatextosub mb-1">Nombre Completo *</label>
+                <input type="text" id="client-name" placeholder="Ej. Mariela Quintana" class="w-full bg-spainput border border-spaborde rounded-xl px-4 py-2.5 text-sm text-spatextosub focus:outline-none focus:border-spataupe transition">
               </div>
 
               <div>
-                <label class="block text-xs font-medium text-zinc-400 mb-1">Teléfono WhatsApp *</label>
+                <label class="block text-xs font-medium text-spatextosub mb-1">Teléfono WhatsApp *</label>
                 <div class="flex">
-                  <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-zinc-700 bg-zinc-800 text-zinc-300 text-xs font-semibold">
+                  <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-spaborde bg-spasuperficie text-spatextosub text-xs font-semibold">
                     🇲🇽 +52
                   </span>
-                  <input type="tel" id="client-phone" maxlength="10" placeholder="10 dígitos (ej. 7772148451)" class="w-full bg-zinc-900/80 border border-zinc-700 rounded-r-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500 transition">
+                  <input type="tel" id="client-phone" maxlength="10" placeholder="10 dígitos (ej. 7772148451)" class="w-full bg-spainput border border-spaborde rounded-r-xl px-4 py-2.5 text-sm text-spatextosub focus:outline-none focus:border-spataupe transition">
                 </div>
               </div>
             </div>
 
             <!-- CUPÓN DE DESCUENTO -->
-            <div class="pt-2 border-t border-zinc-800/80">
-              <label class="block text-xs font-medium text-zinc-400 mb-1">Cupón de Descuento (Opcional)</label>
+            <div class="pt-2 border-t border-spaborde">
+              <label class="block text-xs font-medium text-spatextosub mb-1">Cupón de Descuento (Opcional)</label>
               <div class="flex gap-2">
-                <input type="text" id="coupon-code" placeholder="Código de Cupón" class="uppercase bg-zinc-900/80 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-pink-500 transition flex-grow">
-                <button onclick="applyCoupon()" class="px-4 py-2 bg-pink-600/30 text-pink-200 border border-pink-500/40 rounded-xl text-xs font-semibold hover:bg-pink-600/50 transition">
+                <input type="text" id="coupon-code" placeholder="Código de Cupón" class="uppercase bg-spainput border border-spaborde rounded-xl px-4 py-2 text-sm text-spatextosub focus:outline-none focus:border-spataupe transition flex-grow">
+                <button onclick="applyCoupon()" class="px-4 py-2 bg-sparosa text-spataupeoscuro border border-spataupe/30 rounded-xl text-xs font-semibold hover:bg-sparosahover transition shadow-sm">
                   Aplicar
                 </button>
               </div>
@@ -288,47 +284,47 @@
         <!-- COLUMNA DERECHA: RESUMEN Y BOTÓN DE CONFIRMACIÓN -->
         <div class="space-y-6">
           <div class="glass-panel p-6 rounded-2xl sticky top-28 space-y-6">
-            <h3 class="font-serif text-xl font-bold text-white border-b border-pink-900/40 pb-3 flex items-center gap-2">
-              <i class="fa-solid fa-receipt text-pink-500"></i> Resumen de la Cita
+            <h3 class="font-serif text-xl font-bold text-spataupeoscuro border-b border-spaborde pb-3 flex items-center gap-2">
+              <i class="fa-solid fa-receipt text-spataupe"></i> Resumen de la Cita
             </h3>
 
             <!-- DETALLE DE SERVICIOS SELECCIONADOS -->
             <div class="space-y-3" id="summary-services-list">
-              <p class="text-xs text-zinc-500 italic">No has seleccionado ningún servicio aún.</p>
+              <p class="text-xs text-spataupe italic">No has seleccionado ningún servicio aún.</p>
             </div>
 
             <!-- DESGLOSE DE TIEMPOS Y PRECIOS -->
-            <div class="space-y-2 border-t border-zinc-800 pt-4 text-xs">
-              <div class="flex justify-between text-zinc-400">
+            <div class="space-y-2 border-t border-spaborde pt-4 text-xs">
+              <div class="flex justify-between text-spatextosub">
                 <span>Duración Total:</span>
-                <span class="font-semibold text-white" id="summary-duration">0 min</span>
+                <span class="font-semibold text-spataupeoscuro" id="summary-duration">0 min</span>
               </div>
-              <div class="flex justify-between text-zinc-400">
+              <div class="flex justify-between text-spatextosub">
                 <span>Subtotal Servicios:</span>
-                <span class="font-semibold text-white" id="summary-subtotal">$0.00 MXN</span>
+                <span class="font-semibold text-spataupeoscuro" id="summary-subtotal">$0.00 MXN</span>
               </div>
-              <div class="flex justify-between text-emerald-400 hidden" id="summary-discount-row">
+              <div class="flex justify-between text-[#4A7C59] hidden" id="summary-discount-row">
                 <span>Descuento Cupón:</span>
                 <span class="font-semibold" id="summary-discount">-$0.00 MXN</span>
               </div>
-              <div class="flex justify-between text-base font-bold text-pink-400 border-t border-zinc-800 pt-2">
+              <div class="flex justify-between text-base font-bold text-spataupeoscuro border-t border-spaborde pt-2">
                 <span>Total Estimado:</span>
                 <span id="summary-total">$0.00 MXN</span>
               </div>
             </div>
 
             <!-- NOTA DEL ANTICIPO OBLIGATORIO -->
-            <div class="p-3 rounded-xl bg-pink-950/40 border border-pink-800/40 text-[11px] text-pink-200/90 space-y-1">
+            <div class="p-3 rounded-xl bg-sparosa/40 border border-spataupe/30 text-[11px] text-spataupeoscuro space-y-1">
               <p class="font-semibold flex items-center gap-1.5">
-                <i class="fa-solid fa-shield-halved text-pink-400"></i> Anticipo Requerido: $150.00 MXN
+                <i class="fa-solid fa-shield-halved text-spataupeoscuro"></i> Anticipo Requerido: $150.00 MXN
               </p>
-              <p class="text-pink-300/70">
+              <p class="text-spatextosub">
                 Para apartar tu lugar es indispensable transferir $150.00 MXN a OPENBANK MX tras agendar.
               </p>
             </div>
 
             <!-- BOTÓN PRINCIPAL DE AGENDAMIENTO -->
-            <button onclick="confirmBooking()" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold text-sm shadow-lg shadow-pink-600/30 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+            <button onclick="confirmBooking()" class="w-full py-3.5 px-4 rounded-xl bg-sparosa hover:bg-sparosahover text-spataupeoscuro font-bold text-sm border border-spataupe/40 shadow-sm transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
               <i class="fa-solid fa-calendar-check"></i> Agendar y Generar Ficha
             </button>
           </div>
@@ -344,15 +340,15 @@
     <div id="view-admin" class="hidden space-y-6">
 
       <!-- SISTEMA DE PESTAÑAS PRINCIPALES -->
-      <div class="flex border-b border-zinc-800 space-x-2">
-        <button onclick="switchAdminTab('agenda')" id="tab-btn-agenda" class="px-5 py-3 font-medium text-sm rounded-t-xl bg-pink-600/30 text-pink-200 border-t border-x border-pink-500/40 flex items-center gap-2">
-          <i class="fa-solid fa-calendar-days text-pink-400"></i> 1. Agenda & Citas
+      <div class="flex border-b border-spaborde space-x-2">
+        <button onclick="switchAdminTab('agenda')" id="tab-btn-agenda" class="px-5 py-3 font-medium text-sm rounded-t-xl bg-sparosa text-spataupeoscuro border-t border-x border-spataupe/40 flex items-center gap-2 shadow-sm">
+          <i class="fa-solid fa-calendar-days text-spataupeoscuro"></i> 1. Agenda & Citas
         </button>
-        <button onclick="switchAdminTab('servicios')" id="tab-btn-servicios" class="px-5 py-3 font-medium text-sm rounded-t-xl bg-zinc-900/60 text-zinc-400 border-t border-x border-zinc-800 flex items-center gap-2 hover:text-white transition">
-          <i class="fa-solid fa-spa text-pink-400"></i> 2. Servicios
+        <button onclick="switchAdminTab('servicios')" id="tab-btn-servicios" class="px-5 py-3 font-medium text-sm rounded-t-xl bg-spasuperficie text-spatextosub border-t border-x border-spaborde flex items-center gap-2 hover:text-spataupeoscuro transition">
+          <i class="fa-solid fa-spa text-spataupe"></i> 2. Servicios
         </button>
-        <button onclick="switchAdminTab('configuracion')" id="tab-btn-configuracion" class="px-5 py-3 font-medium text-sm rounded-t-xl bg-zinc-900/60 text-zinc-400 border-t border-x border-zinc-800 flex items-center gap-2 hover:text-white transition">
-          <i class="fa-solid fa-sliders text-pink-400"></i> 3. Configuración
+        <button onclick="switchAdminTab('configuracion')" id="tab-btn-configuracion" class="px-5 py-3 font-medium text-sm rounded-t-xl bg-spasuperficie text-spatextosub border-t border-x border-spaborde flex items-center gap-2 hover:text-spataupeoscuro transition">
+          <i class="fa-solid fa-sliders text-spataupe"></i> 3. Configuración
         </button>
       </div>
 
@@ -362,20 +358,20 @@
         <!-- TARJETAS KPI (FINANCIERAS ACTUALIZADAS) -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div class="glass-card p-4 rounded-2xl space-y-1">
-            <p class="text-xs text-zinc-400 font-medium">Total Citas</p>
-            <p class="text-2xl font-bold text-white" id="kpi-total-citas">0</p>
+            <p class="text-xs text-spataupe font-medium">Total Citas</p>
+            <p class="text-2xl font-bold text-spataupeoscuro" id="kpi-total-citas">0</p>
           </div>
           <div class="glass-card p-4 rounded-2xl space-y-1">
-            <p class="text-xs text-zinc-400 font-medium">Ingresos Est. ($)</p>
-            <p class="text-2xl font-bold text-pink-400" id="kpi-ingresos-est">$0.00</p>
+            <p class="text-xs text-spataupe font-medium">Ingresos Est. ($)</p>
+            <p class="text-2xl font-bold text-spataupeoscuro" id="kpi-ingresos-est">$0.00</p>
           </div>
           <div class="glass-card p-4 rounded-2xl space-y-1">
-            <p class="text-xs text-zinc-400 font-medium">Servicios Activos</p>
-            <p class="text-2xl font-bold text-emerald-400" id="kpi-servicios-activos">0</p>
+            <p class="text-xs text-spataupe font-medium">Servicios Activos</p>
+            <p class="text-2xl font-bold text-[#4A7C59]" id="kpi-servicios-activos">0</p>
           </div>
           <div class="glass-card p-4 rounded-2xl space-y-1">
-            <p class="text-xs text-zinc-400 font-medium">Bloqueos Activos</p>
-            <p class="text-2xl font-bold text-amber-400" id="kpi-bloqueos-activos">0</p>
+            <p class="text-xs text-spataupe font-medium">Bloqueos Activos</p>
+            <p class="text-2xl font-bold text-[#8C6239]" id="kpi-bloqueos-activos">0</p>
           </div>
         </div>
 
@@ -384,13 +380,13 @@
           <!-- ÁREA DE GESTIÓN DE CITAS (IZQUIERDA - 2 COLS) -->
           <div class="lg:col-span-2 glass-panel p-6 rounded-2xl space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <h3 class="font-serif text-lg font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-list-check text-pink-500"></i> Citas Registradas
+              <h3 class="font-serif text-lg font-bold text-spataupeoscuro flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-spataupe"></i> Citas Registradas
               </h3>
 
               <div class="flex items-center gap-2">
-                <input type="date" id="admin-date-filter" onchange="renderAdminAppointments()" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500">
-                <button onclick="clearCancelledAppointments()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded-lg border border-zinc-700 transition">
+                <input type="date" id="admin-date-filter" onchange="renderAdminAppointments()" class="bg-spainput border border-spaborde rounded-lg px-3 py-1.5 text-xs text-spatextosub focus:outline-none focus:border-spataupe">
+                <button onclick="clearCancelledAppointments()" class="px-3 py-1.5 bg-spasuperficie hover:bg-spaborde text-spatextosub text-xs rounded-lg border border-spaborde transition">
                   Limpiar Canceladas
                 </button>
               </div>
@@ -399,7 +395,7 @@
             <!-- TABLA DE CITAS -->
             <div class="overflow-x-auto custom-scrollbar">
               <table class="w-full text-left text-xs">
-                <thead class="bg-zinc-900/80 text-zinc-400 uppercase font-semibold border-b border-zinc-800">
+                <thead class="bg-[#F5EFE8] text-spataupeoscuro uppercase font-semibold border-b border-spaborde">
                   <tr>
                     <th class="p-3">Cliente</th>
                     <th class="p-3">Servicio(s)</th>
@@ -408,7 +404,7 @@
                     <th class="p-3">Estado & Acciones</th>
                   </tr>
                 </thead>
-                <tbody id="admin-appointments-tbody" class="divide-y divide-zinc-800/60 text-zinc-300">
+                <tbody id="admin-appointments-tbody" class="divide-y divide-spaborde text-spatextosub">
                   <!-- Renderizado por JavaScript -->
                 </tbody>
               </table>
@@ -417,20 +413,20 @@
 
           <!-- ÁREA DE BLOQUEOS DE AGENDA (DERECHA - 1 COL) -->
           <div class="glass-panel p-6 rounded-2xl space-y-4">
-            <h3 class="font-serif text-lg font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-calendar-xmark text-amber-500"></i> Bloqueos Activos
+            <h3 class="font-serif text-lg font-bold text-spataupeoscuro flex items-center gap-2">
+              <i class="fa-solid fa-calendar-xmark text-[#8C6239]"></i> Bloqueos Activos
             </h3>
 
             <div class="overflow-x-auto custom-scrollbar">
               <table class="w-full text-left text-xs">
-                <thead class="bg-zinc-900/80 text-zinc-400 uppercase font-semibold border-b border-zinc-800">
+                <thead class="bg-[#F5EFE8] text-spataupeoscuro uppercase font-semibold border-b border-spaborde">
                   <tr>
                     <th class="p-2">Motivo</th>
                     <th class="p-2">Fecha / Hora</th>
                     <th class="p-2 text-right">Acción</th>
                   </tr>
                 </thead>
-                <tbody id="admin-blockouts-tbody" class="divide-y divide-zinc-800/60 text-zinc-300">
+                <tbody id="admin-blockouts-tbody" class="divide-y divide-spaborde text-spatextosub">
                   <!-- Renderizado por JavaScript -->
                 </tbody>
               </table>
@@ -443,14 +439,14 @@
       <!-- PESTAÑA 2: SERVICIOS -->
       <div id="admin-tab-servicios" class="hidden space-y-6">
         <div class="glass-panel p-6 rounded-2xl space-y-4">
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-spaborde pb-4">
             <div>
-              <h3 class="font-serif text-xl font-bold text-white">Catálogo de Servicios Administrables</h3>
-              <p class="text-xs text-pink-300/80 mt-1">
+              <h3 class="font-serif text-xl font-bold text-spataupeoscuro">Catálogo de Servicios Administrables</h3>
+              <p class="text-xs text-spataupe mt-1">
                 <i class="fa-solid fa-circle-info"></i> Cualquier cambio recalcula automáticamente las franjas horarias disponibles para los clientes en tiempo real.
               </p>
             </div>
-            <button onclick="openServiceModal()" class="px-4 py-2 text-xs font-bold rounded-xl bg-pink-600 text-white hover:bg-pink-500 transition shadow-lg shadow-pink-600/30 flex items-center gap-2">
+            <button onclick="openServiceModal()" class="px-4 py-2 text-xs font-bold rounded-xl bg-sparosa text-spataupeoscuro hover:bg-sparosahover border border-spataupe/40 transition shadow-sm flex items-center gap-2">
               <i class="fa-solid fa-plus"></i> Agregar Servicio
             </button>
           </div>
@@ -466,25 +462,25 @@
         
         <!-- COLUMNA 1: CONTRASEÑA ADMIN -->
         <div class="glass-panel p-5 rounded-2xl space-y-4">
-          <h4 class="font-serif font-bold text-white text-base border-b border-zinc-800 pb-2 flex items-center gap-2">
-            <i class="fa-solid fa-key text-pink-500"></i> 1. Clave Admin
+          <h4 class="font-serif font-bold text-spataupeoscuro text-base border-b border-spaborde pb-2 flex items-center gap-2">
+            <i class="fa-solid fa-key text-spataupe"></i> 1. Clave Admin
           </h4>
-          <p class="text-xs text-zinc-400">Contraseña actual por defecto: <span class="font-mono text-pink-300 font-bold">0000</span></p>
+          <p class="text-xs text-spataupe font-medium">Contraseña actual por defecto: <span class="font-mono text-spataupeoscuro font-bold">0000</span></p>
 
           <form onsubmit="changeAdminPassword(event)" class="space-y-3 text-xs">
             <div>
-              <label class="block text-zinc-400 mb-1">Clave Actual</label>
-              <input type="password" id="pwd-current" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              <label class="block text-spatextosub mb-1">Clave Actual</label>
+              <input type="password" id="pwd-current" required class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
             </div>
             <div>
-              <label class="block text-zinc-400 mb-1">Nueva Clave</label>
-              <input type="password" id="pwd-new" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              <label class="block text-spatextosub mb-1">Nueva Clave</label>
+              <input type="password" id="pwd-new" required class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
             </div>
             <div>
-              <label class="block text-zinc-400 mb-1">Confirmar Nueva Clave</label>
-              <input type="password" id="pwd-confirm" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              <label class="block text-spatextosub mb-1">Confirmar Nueva Clave</label>
+              <input type="password" id="pwd-confirm" required class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
             </div>
-            <button type="submit" class="w-full py-2 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-500 transition">
+            <button type="submit" class="w-full py-2 bg-sparosa text-spataupeoscuro font-semibold rounded-lg hover:bg-sparosahover border border-spataupe/30 transition">
               Actualizar Clave
             </button>
           </form>
@@ -492,35 +488,35 @@
 
         <!-- COLUMNA 2: HORARIO OPERATIVO SEMANAL -->
         <div class="glass-panel p-5 rounded-2xl space-y-4">
-          <h4 class="font-serif font-bold text-white text-base border-b border-zinc-800 pb-2 flex items-center gap-2">
-            <i class="fa-solid fa-clock text-pink-500"></i> 2. Horario Operativo
+          <h4 class="font-serif font-bold text-spataupeoscuro text-base border-b border-spaborde pb-2 flex items-center gap-2">
+            <i class="fa-solid fa-clock text-spataupe"></i> 2. Horario Operativo
           </h4>
           
           <form onsubmit="saveOperatingHours(event)" class="space-y-3 text-xs">
             <div>
-              <label class="block text-zinc-400 mb-1 font-semibold">Días de Atención</label>
-              <div class="grid grid-cols-2 gap-1.5 text-zinc-300">
-                <label class="flex items-center gap-1.5"><input type="checkbox" value="1" class="day-checkbox" checked> Lunes</label>
-                <label class="flex items-center gap-1.5"><input type="checkbox" value="2" class="day-checkbox" checked> Martes</label>
-                <label class="flex items-center gap-1.5"><input type="checkbox" value="3" class="day-checkbox" checked> Miércoles</label>
-                <label class="flex items-center gap-1.5"><input type="checkbox" value="4" class="day-checkbox" checked> Jueves</label>
-                <label class="flex items-center gap-1.5"><input type="checkbox" value="5" class="day-checkbox" checked> Viernes</label>
-                <label class="flex items-center gap-1.5"><input type="checkbox" value="6" class="day-checkbox" checked> Sábado</label>
-                <label class="flex items-center gap-1.5"><input type="checkbox" value="0" class="day-checkbox"> Domingo</label>
+              <label class="block text-spatextosub mb-1 font-semibold">Días de Atención</label>
+              <div class="grid grid-cols-2 gap-1.5 text-spatextosub">
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="1" class="day-checkbox accent-spataupe" checked> Lunes</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="2" class="day-checkbox accent-spataupe" checked> Martes</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="3" class="day-checkbox accent-spataupe" checked> Miércoles</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="4" class="day-checkbox accent-spataupe" checked> Jueves</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="5" class="day-checkbox accent-spataupe" checked> Viernes</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="6" class="day-checkbox accent-spataupe" checked> Sábado</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="0" class="day-checkbox accent-spataupe"> Domingo</label>
               </div>
             </div>
 
             <div>
-              <label class="block text-zinc-400 mb-1 font-semibold">Hora de Apertura</label>
-              <input type="time" id="cfg-open-time" value="14:00" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              <label class="block text-spatextosub mb-1 font-semibold">Hora de Apertura</label>
+              <input type="time" id="cfg-open-time" value="14:00" class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
             </div>
 
             <div>
-              <label class="block text-zinc-400 mb-1 font-semibold">Hora de Cierre</label>
-              <input type="time" id="cfg-close-time" value="20:30" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              <label class="block text-spatextosub mb-1 font-semibold">Hora de Cierre</label>
+              <input type="time" id="cfg-close-time" value="20:30" class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
             </div>
 
-            <button type="submit" class="w-full py-2 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-500 transition">
+            <button type="submit" class="w-full py-2 bg-sparosa text-spataupeoscuro font-semibold rounded-lg hover:bg-sparosahover border border-spataupe/30 transition">
               Guardar Horario
             </button>
           </form>
@@ -528,38 +524,38 @@
 
         <!-- COLUMNA 3: BLOQUEOS ESPECIALES (CON LISTA Y ACCIONES) -->
         <div class="glass-panel p-5 rounded-2xl space-y-4">
-          <h4 class="font-serif font-bold text-white text-base border-b border-zinc-800 pb-2 flex items-center gap-2">
-            <i class="fa-solid fa-ban text-amber-500"></i> 3. Bloqueos Especiales
+          <h4 class="font-serif font-bold text-spataupeoscuro text-base border-b border-spaborde pb-2 flex items-center gap-2">
+            <i class="fa-solid fa-ban text-[#8C6239]"></i> 3. Bloqueos Especiales
           </h4>
 
           <form onsubmit="saveSpecialBlockout(event)" class="space-y-3 text-xs">
             <input type="hidden" id="blk-editing-id">
             <div>
-              <label class="block text-zinc-400 mb-1">Motivo</label>
-              <input type="text" id="blk-reason" placeholder="Ej. Mantenimiento" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              <label class="block text-spatextosub mb-1">Motivo</label>
+              <input type="text" id="blk-reason" placeholder="Ej. Mantenimiento" required class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
             </div>
             <div>
-              <label class="block text-zinc-400 mb-1">Fecha</label>
-              <input type="date" id="blk-date" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              <label class="block text-spatextosub mb-1">Fecha</label>
+              <input type="date" id="blk-date" required class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-zinc-400 mb-1">Inicio</label>
-                <input type="time" id="blk-start" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+                <label class="block text-spatextosub mb-1">Inicio</label>
+                <input type="time" id="blk-start" required class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
               </div>
               <div>
-                <label class="block text-zinc-400 mb-1">Fin</label>
-                <input type="time" id="blk-end" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+                <label class="block text-spatextosub mb-1">Fin</label>
+                <input type="time" id="blk-end" required class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
               </div>
             </div>
-            <button type="submit" id="blk-submit-btn" class="w-full py-2 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-500 transition">
+            <button type="submit" id="blk-submit-btn" class="w-full py-2 bg-[#F5E6D3] text-[#8C6239] font-semibold rounded-lg hover:bg-[#EFE0CC] border border-[#E8D1B5] transition">
               Crear Bloqueo
             </button>
           </form>
 
           <!-- LISTA VISUAL DE BLOQUEOS -->
-          <div class="pt-2 border-t border-zinc-800 space-y-2">
-            <label class="block text-[11px] font-semibold text-zinc-400 uppercase">Bloqueos Registrados</label>
+          <div class="pt-2 border-t border-spaborde space-y-2">
+            <label class="block text-[11px] font-semibold text-spataupe uppercase">Bloqueos Registrados</label>
             <div id="config-blockouts-list" class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar text-xs">
               <!-- Carga dinámicamente -->
             </div>
@@ -568,45 +564,45 @@
 
         <!-- COLUMNA 4: CUPONES & VIGENCIAS (CON LISTA Y ACCIONES) -->
         <div class="glass-panel p-5 rounded-2xl space-y-4">
-          <h4 class="font-serif font-bold text-white text-base border-b border-zinc-800 pb-2 flex items-center gap-2">
-            <i class="fa-solid fa-ticket text-pink-500"></i> 4. Cupones
+          <h4 class="font-serif font-bold text-spataupeoscuro text-base border-b border-spaborde pb-2 flex items-center gap-2">
+            <i class="fa-solid fa-ticket text-spataupe"></i> 4. Cupones
           </h4>
 
           <form onsubmit="saveCoupon(event)" class="space-y-3 text-xs">
             <input type="hidden" id="cpn-editing-id">
             <div>
-              <label class="block text-zinc-400 mb-1">Código Promocional</label>
-              <input type="text" id="cpn-code" uppercase placeholder="Ej. VERANO20" required class="uppercase w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              <label class="block text-spatextosub mb-1">Código Promocional</label>
+              <input type="text" id="cpn-code" uppercase placeholder="Ej. VERANO20" required class="uppercase w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
             </div>
             <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block text-zinc-400 mb-1">Tipo</label>
-                <select id="cpn-type" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+                <label class="block text-spatextosub mb-1">Tipo</label>
+                <select id="cpn-type" class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
                   <option value="porcentaje">Porcentaje (%)</option>
                   <option value="fijo">Monto Fijo ($)</option>
                 </select>
               </div>
               <div>
-                <label class="block text-zinc-400 mb-1">Valor</label>
-                <input type="number" step="0.01" id="cpn-value" placeholder="10" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+                <label class="block text-spatextosub mb-1">Valor</label>
+                <input type="number" step="0.01" id="cpn-value" placeholder="10" required class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
               </div>
             </div>
             <div>
-              <label class="block text-zinc-400 mb-1">Fecha Inicio</label>
-              <input type="date" id="cpn-start" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              <label class="block text-spatextosub mb-1">Fecha Inicio</label>
+              <input type="date" id="cpn-start" required class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
             </div>
             <div>
-              <label class="block text-zinc-400 mb-1">Fecha Caducidad</label>
-              <input type="date" id="cpn-end" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              <label class="block text-spatextosub mb-1">Fecha Caducidad</label>
+              <input type="date" id="cpn-end" required class="w-full bg-spainput border border-spaborde rounded-lg p-2 text-spatextosub">
             </div>
-            <button type="submit" id="cpn-submit-btn" class="w-full py-2 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-500 transition">
+            <button type="submit" id="cpn-submit-btn" class="w-full py-2 bg-sparosa text-spataupeoscuro font-semibold rounded-lg hover:bg-sparosahover border border-spataupe/30 transition">
               Crear Cupón
             </button>
           </form>
 
           <!-- LISTA VISUAL DE CUPONES -->
-          <div class="pt-2 border-t border-zinc-800 space-y-2">
-            <label class="block text-[11px] font-semibold text-zinc-400 uppercase">Cupones Registrados</label>
+          <div class="pt-2 border-t border-spaborde space-y-2">
+            <label class="block text-[11px] font-semibold text-spataupe uppercase">Cupones Registrados</label>
             <div id="config-coupons-list" class="space-y-1.5 max-h-40 overflow-y-auto custom-scrollbar text-xs">
               <!-- Carga dinámicamente -->
             </div>
@@ -624,29 +620,29 @@
   <!-- ==================================================================== -->
 
   <!-- MODAL 1: FICHA DE DEPÓSITO DESCARGABLE & WHATSAPP -->
-  <div id="modal-deposit-receipt" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="glass-panel w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-pink-500/30 space-y-4">
+  <div id="modal-deposit-receipt" class="fixed inset-0 z-50 bg-[#57463E]/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-spacrema w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-spaborde space-y-4">
       
       <!-- CONTENIDO A CAPTURAR (CANVAS / PNG) -->
-      <div id="receipt-capture-area" class="p-6 bg-zinc-950 text-white space-y-4">
+      <div id="receipt-capture-area" class="p-6 bg-spacrema text-spatextosub space-y-4">
         
-        <div class="flex items-center justify-between border-b border-pink-900/40 pb-3">
+        <div class="flex items-center justify-between border-b border-spaborde pb-3">
           <div class="flex items-center gap-3">
-            <img src="assets/logo.png" alt="Logo" class="h-10 w-10 rounded-full border border-pink-500">
+            <img src="assets/logo.png" alt="Logo" class="h-10 w-10 rounded-full border border-spataupe object-cover">
             <div>
-              <h4 class="font-serif font-bold text-lg text-white">SKINCARE MO</h4>
-              <p class="text-[10px] text-pink-300">Ficha Oficial de Reservación</p>
+              <h4 class="font-serif font-bold text-lg text-spataupeoscuro">SKINCARE MO</h4>
+              <p class="text-[10px] text-spataupe">Ficha Oficial de Reservación</p>
             </div>
           </div>
-          <span class="px-2.5 py-1 rounded-full text-[10px] font-mono bg-pink-500/20 text-pink-300 border border-pink-500/30" id="rcpt-code">
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-mono bg-sparosa text-spataupeoscuro border border-spataupe/30" id="rcpt-code">
             #MO-0000
           </span>
         </div>
 
         <!-- RELOJ DE TIEMPO LÍMITE DE PAGO -->
-        <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center justify-between">
+        <div class="p-3 rounded-xl bg-[#F5E6D3] border border-[#E8D1B5] text-[#8C6239] text-xs flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <i class="fa-solid fa-hourglass-half text-amber-400 animate-spin"></i>
+            <i class="fa-solid fa-hourglass-half text-amber-700 animate-spin"></i>
             <span>Tiempo Límite para Transferir:</span>
           </div>
           <span class="font-mono font-bold text-sm" id="rcpt-countdown">00:00:00</span>
@@ -654,34 +650,34 @@
 
         <!-- RESUMEN DE CITA -->
         <div class="space-y-2 text-xs">
-          <div class="flex justify-between text-zinc-400">
+          <div class="flex justify-between text-spatextosub">
             <span>Paciente:</span>
-            <span class="font-semibold text-white" id="rcpt-client-name">-</span>
+            <span class="font-semibold text-spataupeoscuro" id="rcpt-client-name">-</span>
           </div>
-          <div class="flex justify-between text-zinc-400">
+          <div class="flex justify-between text-spatextosub">
             <span>Servicio(s):</span>
-            <span class="font-semibold text-white text-right" id="rcpt-services">-</span>
+            <span class="font-semibold text-spataupeoscuro text-right" id="rcpt-services">-</span>
           </div>
-          <div class="flex justify-between text-zinc-400">
+          <div class="flex justify-between text-spatextosub">
             <span>Fecha y Hora:</span>
-            <span class="font-semibold text-pink-300" id="rcpt-datetime">-</span>
+            <span class="font-semibold text-spataupeoscuro" id="rcpt-datetime">-</span>
           </div>
-          <div class="flex justify-between text-zinc-400 border-t border-zinc-800 pt-2">
+          <div class="flex justify-between text-spatextosub border-t border-spaborde pt-2">
             <span>Total Tratamientos:</span>
-            <span class="font-semibold text-white" id="rcpt-total">$0.00 MXN</span>
+            <span class="font-semibold text-spataupeoscuro" id="rcpt-total">$0.00 MXN</span>
           </div>
         </div>
 
         <!-- DATOS BANCARIOS DE OPENBANK MX -->
-        <div class="p-4 rounded-2xl bg-zinc-900 border border-pink-500/30 space-y-2 text-xs">
-          <div class="flex items-center justify-between font-bold text-pink-400 border-b border-zinc-800 pb-1">
+        <div class="p-4 rounded-2xl bg-spasuperficie border border-spaborde space-y-2 text-xs shadow-sm">
+          <div class="flex items-center justify-between font-bold text-spataupeoscuro border-b border-spaborde pb-1">
             <span>OPENBANK MX</span>
-            <span class="text-white">Anticipo: $150.00 MXN</span>
+            <span class="text-spataupeoscuro">Anticipo: $150.00 MXN</span>
           </div>
-          <div class="space-y-1 text-zinc-300 text-[11px]">
-            <p><strong>Cuenta CLABE:</strong> <span class="font-mono text-white select-all">646180401617525026</span></p>
+          <div class="space-y-1 text-spatextosub text-[11px]">
+            <p><strong>Cuenta CLABE:</strong> <span class="font-mono text-spataupeoscuro select-all">646180401617525026</span></p>
             <p><strong>Titular:</strong> Mariela Olvera Quintana</p>
-            <p class="text-amber-300/90 font-semibold">⚠️ Obligatorio incluir Referencia: <span id="rcpt-reference-name" class="underline">Nombre del Paciente</span></p>
+            <p class="text-[#8C6239] font-semibold">⚠️ Obligatorio incluir Referencia: <span id="rcpt-reference-name" class="underline">Nombre del Paciente</span></p>
           </div>
         </div>
 
@@ -690,16 +686,16 @@
       <!-- BOTONES DE ACCIÓN -->
       <div class="px-6 pb-6 space-y-2">
         <div class="grid grid-cols-2 gap-3">
-          <button onclick="downloadReceiptPNG()" class="w-full py-2.5 bg-black hover:bg-zinc-900 border border-zinc-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+          <button onclick="downloadReceiptPNG()" class="w-full py-2.5 bg-spasuperficie hover:bg-spaborde border border-spaborde text-spataupeoscuro rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
             <i class="fa-solid fa-download"></i> Descargar Ficha
           </button>
           
-          <a id="btn-whatsapp-action" target="_blank" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+          <a id="btn-whatsapp-action" target="_blank" class="w-full py-2.5 bg-[#4A7C59] hover:bg-[#3D6647] text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-sm">
             <i class="fa-brands fa-whatsapp text-lg"></i> Confirmar WhatsApp
           </a>
         </div>
 
-        <button onclick="closeModal('modal-deposit-receipt')" class="w-full py-2 text-xs text-zinc-400 hover:text-white transition">
+        <button onclick="closeModal('modal-deposit-receipt')" class="w-full py-2 text-xs text-spataupe hover:text-spataupeoscuro transition">
           Cerrar
         </button>
       </div>
@@ -708,40 +704,40 @@
   </div>
 
   <!-- MODAL 2: CREAR / EDITAR SERVICIO -->
-  <div id="modal-service" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="glass-panel w-full max-w-md rounded-3xl p-6 border border-pink-500/30 space-y-4">
-      <div class="flex justify-between items-center border-b border-zinc-800 pb-3">
-        <h4 class="font-serif text-lg font-bold text-white" id="service-modal-title">Agregar Nuevo Servicio</h4>
-        <button onclick="closeModal('modal-service')" class="text-zinc-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+  <div id="modal-service" class="fixed inset-0 z-50 bg-[#57463E]/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-spacrema w-full max-w-md rounded-3xl p-6 border border-spaborde space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-spaborde pb-3">
+        <h4 class="font-serif text-lg font-bold text-spataupeoscuro" id="service-modal-title">Agregar Nuevo Servicio</h4>
+        <button onclick="closeModal('modal-service')" class="text-spataupe hover:text-spataupeoscuro"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <form onsubmit="saveServiceForm(event)" class="space-y-3 text-xs">
         <input type="hidden" id="svc-id">
         <div>
-          <label class="block text-zinc-400 mb-1">Nombre del Tratamiento *</label>
-          <input type="text" id="svc-name" required placeholder="Ej. Facial Glow Premium" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white">
+          <label class="block text-spatextosub mb-1">Nombre del Tratamiento *</label>
+          <input type="text" id="svc-name" required placeholder="Ej. Facial Glow Premium" class="w-full bg-spainput border border-spaborde rounded-xl p-2.5 text-spatextosub">
         </div>
         <div>
-          <label class="block text-zinc-400 mb-1">Descripción</label>
-          <textarea id="svc-desc" rows="2" placeholder="Detalle del tratamiento..." class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white"></textarea>
+          <label class="block text-spatextosub mb-1">Descripción</label>
+          <textarea id="svc-desc" rows="2" placeholder="Detalle del tratamiento..." class="w-full bg-spainput border border-spaborde rounded-xl p-2.5 text-spatextosub"></textarea>
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-zinc-400 mb-1">Duración (Minutos) *</label>
-            <input type="number" id="svc-duration" required min="15" step="15" value="60" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white">
+            <label class="block text-spatextosub mb-1">Duración (Minutos) *</label>
+            <input type="number" id="svc-duration" required min="15" step="15" value="60" class="w-full bg-spainput border border-spaborde rounded-xl p-2.5 text-spatextosub">
           </div>
           <div>
-            <label class="block text-zinc-400 mb-1">Precio ($ MXN) *</label>
-            <input type="number" id="svc-price" required min="0" step="10" value="850" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white">
+            <label class="block text-spatextosub mb-1">Precio ($ MXN) *</label>
+            <input type="number" id="svc-price" required min="0" step="10" value="850" class="w-full bg-spainput border border-spaborde rounded-xl p-2.5 text-spatextosub">
           </div>
         </div>
         <div>
-          <label class="flex items-center gap-2 text-zinc-300 font-medium">
-            <input type="checkbox" id="svc-active" checked class="w-4 h-4 accent-pink-600 rounded"> Servicio Habilitado en Catálogo
+          <label class="flex items-center gap-2 text-spatextosub font-medium">
+            <input type="checkbox" id="svc-active" checked class="w-4 h-4 accent-spataupe rounded"> Servicio Habilitado en Catálogo
           </label>
         </div>
 
-        <button type="submit" class="w-full py-3 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-xl transition shadow-lg shadow-pink-600/30">
+        <button type="submit" class="w-full py-3 bg-sparosa hover:bg-sparosahover text-spataupeoscuro font-bold rounded-xl transition border border-spataupe/30 shadow-sm">
           Guardar Tratamiento
         </button>
       </form>
@@ -749,53 +745,53 @@
   </div>
 
   <!-- MODAL 3: AUTENTICACIÓN ADMIN -->
-  <div id="modal-admin-auth" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="glass-panel w-full max-w-sm rounded-3xl p-6 border border-pink-500/30 space-y-4">
+  <div id="modal-admin-auth" class="fixed inset-0 z-50 bg-[#57463E]/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-spacrema w-full max-w-sm rounded-3xl p-6 border border-spaborde space-y-4 shadow-2xl">
       <div class="text-center space-y-1">
-        <h4 class="font-serif text-xl font-bold text-white">Acceso Administrativo</h4>
-        <p class="text-xs text-zinc-400">Ingresa tu contraseña para continuar</p>
+        <h4 class="font-serif text-xl font-bold text-spataupeoscuro">Acceso Administrativo</h4>
+        <p class="text-xs text-spataupe">Ingresa tu contraseña para continuar</p>
       </div>
 
       <form onsubmit="submitAdminAuth(event)" class="space-y-4">
         <div>
-          <input type="password" id="admin-auth-input" placeholder="Contraseña (Por defecto: 0000)" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-center font-mono text-lg text-white focus:outline-none focus:border-pink-500">
+          <input type="password" id="admin-auth-input" placeholder="Contraseña (Por defecto: 0000)" class="w-full bg-spainput border border-spaborde rounded-xl px-4 py-3 text-center font-mono text-lg text-spatextosub focus:outline-none focus:border-spataupe">
         </div>
 
-        <button type="submit" class="w-full py-3 bg-pink-600 hover:bg-pink-500 text-white font-bold text-sm rounded-xl transition">
+        <button type="submit" class="w-full py-3 bg-sparosa hover:bg-sparosahover text-spataupeoscuro font-bold text-sm rounded-xl transition border border-spataupe/30 shadow-sm">
           Ingresar al Panel
         </button>
       </form>
 
-      <button onclick="closeModal('modal-admin-auth')" class="w-full text-center text-xs text-zinc-500 hover:text-zinc-300">
+      <button onclick="closeModal('modal-admin-auth')" class="w-full text-center text-xs text-spataupe hover:text-spataupeoscuro">
         Cancelar
       </button>
     </div>
   </div>
 
   <!-- MODAL 4: CONFIGURAR SUPABASE -->
-  <div id="modal-supabase" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
-    <div class="glass-panel w-full max-w-md rounded-3xl p-6 border border-amber-500/30 space-y-4">
+  <div id="modal-supabase" class="fixed inset-0 z-50 bg-[#57463E]/40 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-spacrema w-full max-w-md rounded-3xl p-6 border border-spaborde space-y-4 shadow-2xl">
       <div class="text-center space-y-1">
-        <h4 class="font-serif text-xl font-bold text-white">Conexión Backend Supabase</h4>
-        <p class="text-xs text-zinc-400">Ingresa las credenciales de tu proyecto en Supabase</p>
+        <h4 class="font-serif text-xl font-bold text-spataupeoscuro">Conexión Backend Supabase</h4>
+        <p class="text-xs text-spataupe">Ingresa las credenciales de tu proyecto en Supabase</p>
       </div>
 
       <form onsubmit="saveSupabaseCredentials(event)" class="space-y-3 text-xs">
         <div>
-          <label class="block text-zinc-400 mb-1">SUPABASE URL</label>
-          <input type="url" id="spb-url" placeholder="https://xyz.supabase.co" required class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white">
+          <label class="block text-spatextosub mb-1">SUPABASE URL</label>
+          <input type="url" id="spb-url" placeholder="https://xyz.supabase.co" required class="w-full bg-spainput border border-spaborde rounded-xl p-2.5 text-spatextosub">
         </div>
         <div>
-          <label class="block text-zinc-400 mb-1">SUPABASE ANON KEY</label>
-          <input type="text" id="spb-key" placeholder="eyJhbGciOi..." required class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white">
+          <label class="block text-spatextosub mb-1">SUPABASE ANON KEY</label>
+          <input type="text" id="spb-key" placeholder="eyJhbGciOi..." required class="w-full bg-spainput border border-spaborde rounded-xl p-2.5 text-spatextosub">
         </div>
 
-        <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition">
+        <button type="submit" class="w-full py-3 bg-[#F5E6D3] hover:bg-[#EFE0CC] text-[#8C6239] font-bold rounded-xl transition border border-[#E8D1B5] shadow-sm">
           Guardar y Conectar Realtime
         </button>
       </form>
 
-      <button onclick="closeModal('modal-supabase')" class="w-full text-center text-xs text-zinc-500 hover:text-zinc-300">
+      <button onclick="closeModal('modal-supabase')" class="w-full text-center text-xs text-spataupe hover:text-spataupeoscuro">
         Cerrar (Usar Modo Local)
       </button>
     </div>
@@ -903,7 +899,7 @@
       if (url && key && window.supabase) {
         try {
           STATE.supabaseClient = window.supabase.createClient(url, key);
-          document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+          document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-emerald-600 animate-pulse";
           document.getElementById('status-text').innerText = "🟢 Conectado en Vivo (Supabase)";
 
           STATE.supabaseClient
@@ -990,7 +986,7 @@
         STATE.isAdminAuthenticated = true;
         closeModal('modal-admin-auth');
         document.getElementById('admin-btn-label').innerText = "Panel Admin";
-        document.getElementById('admin-icon').className = "fa-solid fa-lock-open text-emerald-400";
+        document.getElementById('admin-icon').className = "fa-solid fa-lock-open text-[#4A7C59]";
         switchView('admin');
       } else {
         alert("⚠️ Contraseña incorrecta. Por defecto es 0000");
@@ -1000,7 +996,7 @@
     function logoutAdmin() {
       STATE.isAdminAuthenticated = false;
       document.getElementById('admin-btn-label').innerText = "Acceso Admin";
-      document.getElementById('admin-icon').className = "fa-solid fa-user-shield text-zinc-400";
+      document.getElementById('admin-icon').className = "fa-solid fa-user-shield text-spataupe";
       switchView('client');
     }
 
@@ -1009,10 +1005,10 @@
         const btn = document.getElementById(`tab-btn-${t}`);
         const view = document.getElementById(`admin-tab-${t}`);
         if (t === tab) {
-          btn.className = "px-5 py-3 font-medium text-sm rounded-t-xl bg-pink-600/30 text-pink-200 border-t border-x border-pink-500/40 flex items-center gap-2";
+          btn.className = "px-5 py-3 font-medium text-sm rounded-t-xl bg-sparosa text-spataupeoscuro border-t border-x border-spataupe/40 flex items-center gap-2 shadow-sm";
           view.classList.remove('hidden');
         } else {
-          btn.className = "px-5 py-3 font-medium text-sm rounded-t-xl bg-zinc-900/60 text-zinc-400 border-t border-x border-zinc-800 flex items-center gap-2 hover:text-white transition";
+          btn.className = "px-5 py-3 font-medium text-sm rounded-t-xl bg-spasuperficie text-spatextosub border-t border-x border-spaborde flex items-center gap-2 hover:text-spataupeoscuro transition";
           view.classList.add('hidden');
         }
       });
@@ -1026,25 +1022,25 @@
       STATE.services.filter(s => s.activo).forEach(service => {
         const isSelected = STATE.selectedServiceIds.includes(service.id);
         const card = document.createElement('div');
-        card.className = `glass-card p-4 rounded-xl cursor-pointer flex flex-col justify-between space-y-3 ${isSelected ? 'border-pink-500 bg-pink-950/30' : ''}`;
+        card.className = `glass-card p-4 rounded-xl cursor-pointer flex flex-col justify-between space-y-3 ${isSelected ? 'border-spataupe bg-sparosa/30 shadow-md' : ''}`;
         card.onclick = () => toggleServiceSelection(service.id);
 
         card.innerHTML = `
           <div class="space-y-1.5">
             <div class="flex items-center justify-between">
-              <h4 class="font-bold text-white text-sm flex items-center gap-2">
+              <h4 class="font-bold text-spataupeoscuro text-sm flex items-center gap-2">
                 ${service.nombre}
               </h4>
-              <input type="checkbox" ${isSelected ? 'checked' : ''} class="w-4 h-4 accent-pink-600 rounded pointer-events-none">
+              <input type="checkbox" ${isSelected ? 'checked' : ''} class="w-4 h-4 accent-spataupe rounded pointer-events-none">
             </div>
-            <p class="text-xs text-zinc-400 line-clamp-2">${service.descripcion || ''}</p>
+            <p class="text-xs text-spatextosub line-clamp-2">${service.descripcion || ''}</p>
           </div>
 
-          <div class="flex items-center justify-between pt-2 border-t border-zinc-800/60 text-xs">
-            <span class="text-pink-300 font-semibold flex items-center gap-1">
+          <div class="flex items-center justify-between pt-2 border-t border-spaborde text-xs">
+            <span class="text-spataupe font-semibold flex items-center gap-1">
               <i class="fa-solid fa-clock text-[10px]"></i> ${service.duracion_min} min
             </span>
-            <span class="text-white font-bold text-sm">$${parseFloat(service.precio).toFixed(2)} MXN</span>
+            <span class="text-spataupeoscuro font-bold text-sm">$${parseFloat(service.precio).toFixed(2)} MXN</span>
           </div>
         `;
         grid.appendChild(card);
@@ -1074,7 +1070,7 @@
       listContainer.innerHTML = '';
 
       if (selected.length === 0) {
-        listContainer.innerHTML = '<p class="text-xs text-zinc-500 italic">No has seleccionado ningún servicio aún.</p>';
+        listContainer.innerHTML = '<p class="text-xs text-spataupe italic">No has seleccionado ningún servicio aún.</p>';
         document.getElementById('summary-duration').innerText = '0 min';
         document.getElementById('summary-subtotal').innerText = '$0.00 MXN';
         document.getElementById('summary-total').innerText = '$0.00 MXN';
@@ -1089,13 +1085,13 @@
         totalDuration += parseInt(s.duracion_min);
 
         const item = document.createElement('div');
-        item.className = 'flex justify-between items-center text-xs bg-zinc-900/50 p-2 rounded-lg border border-zinc-800';
+        item.className = 'flex justify-between items-center text-xs bg-spasuperficie p-2 rounded-lg border border-spaborde';
         item.innerHTML = `
           <div>
-            <p class="font-medium text-white">${s.nombre}</p>
-            <p class="text-[10px] text-pink-300">${s.duracion_min} min</p>
+            <p class="font-medium text-spataupeoscuro">${s.nombre}</p>
+            <p class="text-[10px] text-spataupe">${s.duracion_min} min</p>
           </div>
-          <span class="font-semibold text-white">$${parseFloat(s.precio).toFixed(2)}</span>
+          <span class="font-semibold text-spataupeoscuro">$${parseFloat(s.precio).toFixed(2)}</span>
         `;
         listContainer.appendChild(item);
       });
@@ -1250,17 +1246,17 @@
 
         if (isPast || !isOperative) {
           btn.disabled = true;
-          btn.className += ' bg-zinc-950/40 border-transparent text-zinc-600';
+          btn.className += ' bg-[#F5F2ED] border-transparent text-[#C4A79A]/40';
         } else if (isSelected) {
-          btn.className += ' bg-pink-600 border-pink-400 text-white shadow-lg shadow-pink-600/40 font-bold scale-105';
+          btn.className += ' bg-sparosa border-spataupe text-spataupeoscuro font-bold shadow-md scale-105';
         } else {
-          btn.className += ' bg-zinc-900 border-zinc-800 text-zinc-300 hover:border-pink-500/60 hover:text-white';
+          btn.className += ' bg-spasuperficie border-spaborde text-spatextosub hover:bg-sparosa/50 hover:text-spataupeoscuro';
         }
 
         btn.innerHTML = `<span>${d}</span>`;
 
         if (dateStr === cdmxTodayStr) {
-          btn.innerHTML += `<span class="text-[9px] font-bold text-pink-400">Hoy</span>`;
+          btn.innerHTML += `<span class="text-[9px] font-bold text-spataupe">Hoy</span>`;
         }
 
         btn.onclick = () => {
@@ -1293,12 +1289,12 @@
       container.innerHTML = '';
 
       if (!dateVal) {
-        container.innerHTML = '<p class="col-span-full text-xs text-zinc-500 text-center py-4">Selecciona primero un día en el calendario superior.</p>';
+        container.innerHTML = '<p class="col-span-full text-xs text-spataupe text-center py-4">Selecciona primero un día en el calendario superior.</p>';
         return;
       }
 
       if (STATE.selectedServiceIds.length === 0) {
-        container.innerHTML = '<p class="col-span-full text-xs text-zinc-500 text-center py-4">Selecciona al menos 1 tratamiento en el Paso 1.</p>';
+        container.innerHTML = '<p class="col-span-full text-xs text-spataupe text-center py-4">Selecciona al menos 1 tratamiento en el Paso 1.</p>';
         return;
       }
 
@@ -1362,15 +1358,15 @@
         btn.onclick = () => selectSlot(timeStr, endTimeStr);
         btn.className = `py-2 px-3 rounded-xl text-xs font-semibold border transition ${
           isSelected
-            ? 'bg-pink-600 text-white border-pink-400 shadow-md shadow-pink-600/40'
-            : 'bg-zinc-900/80 text-zinc-300 border-zinc-800 hover:border-pink-500/50 hover:text-white'
+            ? 'bg-sparosa text-spataupeoscuro border-spataupe font-bold shadow-sm'
+            : 'bg-spainput text-spatextosub border-spaborde hover:border-spataupe hover:text-spataupeoscuro'
         }`;
         btn.innerText = timeStr;
         container.appendChild(btn);
       }
 
       if (availableCount === 0) {
-        container.innerHTML = '<p class="col-span-full text-xs text-amber-400 text-center py-4">No hay franjas horarias disponibles para esta fecha con la duración requerida.</p>';
+        container.innerHTML = '<p class="col-span-full text-xs text-[#8C6239] text-center py-4">No hay franjas horarias disponibles para esta fecha con la duración requerida.</p>';
       }
     }
 
@@ -1393,7 +1389,7 @@
       const dateVal = STATE.selectedDate || getCDMXDate().toISOString().split('T')[0];
 
       if (!code) {
-        statusEl.className = "text-xs mt-1.5 text-zinc-400";
+        statusEl.className = "text-xs mt-1.5 text-spataupe";
         statusEl.innerText = "Ingresa un código de cupón.";
         statusEl.classList.remove('hidden');
         return;
@@ -1402,7 +1398,7 @@
       const coupon = STATE.coupons.find(c => c.codigo.toUpperCase() === code && c.activo);
 
       if (!coupon) {
-        statusEl.className = "text-xs mt-1.5 text-red-400 font-semibold";
+        statusEl.className = "text-xs mt-1.5 text-[#9E4A4A] font-semibold";
         statusEl.innerText = "❌ El cupón no existe o está inactivo.";
         statusEl.classList.remove('hidden');
         STATE.appliedCoupon = null;
@@ -1411,7 +1407,7 @@
       }
 
       if (dateVal < coupon.fecha_inicio) {
-        statusEl.className = "text-xs mt-1.5 text-amber-400 font-semibold";
+        statusEl.className = "text-xs mt-1.5 text-[#8C6239] font-semibold";
         statusEl.innerText = `⏳ Cupón Próximamente Válido (Inicio: ${coupon.fecha_inicio})`;
         statusEl.classList.remove('hidden');
         STATE.appliedCoupon = null;
@@ -1420,7 +1416,7 @@
       }
 
       if (dateVal > coupon.fecha_expiracion) {
-        statusEl.className = "text-xs mt-1.5 text-red-400 font-semibold";
+        statusEl.className = "text-xs mt-1.5 text-[#9E4A4A] font-semibold";
         statusEl.innerText = `🚫 Cupón Caducado (Expiró el: ${coupon.fecha_expiracion})`;
         statusEl.classList.remove('hidden');
         STATE.appliedCoupon = null;
@@ -1429,7 +1425,7 @@
       }
 
       STATE.appliedCoupon = coupon;
-      statusEl.className = "text-xs mt-1.5 text-emerald-400 font-semibold";
+      statusEl.className = "text-xs mt-1.5 text-[#4A7C59] font-semibold";
       statusEl.innerText = `✅ Cupón Aplicado: ${coupon.tipo === 'porcentaje' ? coupon.valor + '%' : '$' + coupon.valor} de descuento.`;
       statusEl.classList.remove('hidden');
       updateSummary();
@@ -1572,7 +1568,7 @@
 
     function downloadReceiptPNG() {
       const element = document.getElementById('receipt-capture-area');
-      html2canvas(element, { backgroundColor: '#090508' }).then(canvas => {
+      html2canvas(element, { backgroundColor: '#FDFDF2' }).then(canvas => {
         const link = document.createElement('a');
         link.download = `Ficha-SkincareMO-${document.getElementById('rcpt-code').innerText}.png`;
         link.href = canvas.toDataURL('image/png');
@@ -1592,11 +1588,6 @@
         appts = appts.filter(a => a.fecha === filterDate);
       }
 
-      // NUEVA LÓGICA FINANCIERA REQUERIDA DE INGRESOS EST.
-      // Cita confirmada: +$150 (anticipo)
-      // Cita completada: +$Total (anticipo + resto)
-      // Cita no_acudio: +$150 (anticipo retenido)
-      // Pendiente / cancelada: +$0
       const totalRev = STATE.appointments.reduce((sum, a) => {
         if (a.estado === 'confirmada') return sum + 150.00;
         if (a.estado === 'completada') return sum + parseFloat(a.total || 0);
@@ -1611,29 +1602,29 @@
 
       appts.forEach(appt => {
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-zinc-900/40 transition";
+        tr.className = "hover:bg-spasuperficie transition";
 
         const isExpired = new Date(appt.limite_pago).getTime() < Date.now() && appt.estado === 'pendiente';
         
-        let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Pendiente</span>`;
-        if (appt.estado === 'confirmada') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Confirmada ($150)</span>`;
-        if (appt.estado === 'completada') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">Concluida ($${parseFloat(appt.total).toFixed(2)})</span>`;
-        if (appt.estado === 'no_acudio') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-orange-500/20 text-orange-300 border border-orange-500/30">No Acudió ($150)</span>`;
-        if (appt.estado === 'cancelada') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-300 border border-red-500/30">Cancelada</span>`;
-        if (isExpired) statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-700">Expirado</span>`;
+        let statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F5E6D3] text-[#8C6239] border border-[#E8D1B5]">Pendiente</span>`;
+        if (appt.estado === 'confirmada') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#E6F0E6] text-[#3D6647] border border-[#C5DEC7]">Confirmada ($150)</span>`;
+        if (appt.estado === 'completada') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#EDE8F5] text-[#55476D] border border-[#D5CBE5]">Concluida ($${parseFloat(appt.total).toFixed(2)})</span>`;
+        if (appt.estado === 'no_acudio') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#FDF0E6] text-[#A35929] border border-[#F5D8C4]">No Acudió ($150)</span>`;
+        if (appt.estado === 'cancelada') statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F8E4E4] text-[#9E4A4A] border border-[#ECC0C0]">Cancelada</span>`;
+        if (isExpired) statusBadge = `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F0EBE5] text-spataupe border border-spaborde">Expirado</span>`;
 
         tr.innerHTML = `
-          <td class="p-3 font-semibold text-white">
+          <td class="p-3 font-semibold text-spataupeoscuro">
             ${appt.cliente_nombre}
-            <div class="text-[10px] text-zinc-400 font-mono">${appt.cliente_telefono}</div>
+            <div class="text-[10px] text-spataupe font-mono">${appt.cliente_telefono}</div>
           </td>
-          <td class="p-3 font-medium text-pink-200">${appt.servicios_nombres}</td>
+          <td class="p-3 font-medium text-spatextosub">${appt.servicios_nombres}</td>
           <td class="p-3">
-            <div>${formatDateSpanish(appt.fecha)}</div>
-            <div class="text-zinc-400">${appt.hora_inicio} - ${appt.hora_fin}</div>
+            <div class="font-medium">${formatDateSpanish(appt.fecha)}</div>
+            <div class="text-spataupe text-[11px]">${appt.hora_inicio} - ${appt.hora_fin}</div>
           </td>
           <td class="p-3">
-            <span class="font-mono text-[11px] ${isExpired ? 'text-zinc-500' : 'text-amber-300'}">
+            <span class="font-mono text-[11px] ${isExpired ? 'text-spataupe' : 'text-[#8C6239]'}">
               ${new Date(appt.limite_pago).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
             </span>
           </td>
@@ -1642,20 +1633,20 @@
               ${statusBadge}
               
               ${appt.estado === 'pendiente' ? `
-                <button onclick="updateApptStatus('${appt.id}', 'confirmada')" class="px-2 py-1 bg-emerald-600 text-white rounded text-[10px] font-bold hover:bg-emerald-500">Confirmar</button>
-                <button onclick="updateApptStatus('${appt.id}', 'cancelada')" class="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-bold hover:bg-red-500">Cancelar</button>
+                <button onclick="updateApptStatus('${appt.id}', 'confirmada')" class="px-2 py-1 bg-[#4A7C59] text-white rounded-lg text-[10px] font-bold hover:bg-[#3D6647] shadow-sm">Confirmar</button>
+                <button onclick="updateApptStatus('${appt.id}', 'cancelada')" class="px-2 py-1 bg-[#9E4A4A] text-white rounded-lg text-[10px] font-bold hover:bg-[#853D3D] shadow-sm">Cancelar</button>
               ` : ''}
 
               ${appt.estado === 'confirmada' ? `
-                <button onclick="updateApptStatus('${appt.id}', 'completada')" class="px-2 py-1 bg-purple-600 text-white rounded text-[10px] font-bold hover:bg-purple-500">Concluido</button>
-                <button onclick="updateApptStatus('${appt.id}', 'no_acudio')" class="px-2 py-1 bg-orange-600 text-white rounded text-[10px] font-bold hover:bg-orange-500">No Acudió</button>
+                <button onclick="updateApptStatus('${appt.id}', 'completada')" class="px-2 py-1 bg-[#55476D] text-white rounded-lg text-[10px] font-bold hover:bg-[#433757] shadow-sm">Concluido</button>
+                <button onclick="updateApptStatus('${appt.id}', 'no_acudio')" class="px-2 py-1 bg-[#A35929] text-white rounded-lg text-[10px] font-bold hover:bg-[#874921] shadow-sm">No Acudió</button>
               ` : ''}
 
-              <a href="https://wa.me/${appt.cliente_telefono}" target="_blank" class="p-1 text-emerald-400 hover:text-emerald-300" title="Contactar WhatsApp">
+              <a href="https://wa.me/${appt.cliente_telefono}" target="_blank" class="p-1 text-[#4A7C59] hover:text-[#3D6647]" title="Contactar WhatsApp">
                 <i class="fa-brands fa-whatsapp text-sm"></i>
               </a>
 
-              <button onclick="deleteAppointment('${appt.id}')" class="p-1 text-zinc-500 hover:text-red-400 transition" title="Eliminar del historial">
+              <button onclick="deleteAppointment('${appt.id}')" class="p-1 text-spataupe hover:text-[#9E4A4A] transition" title="Eliminar del historial">
                 <i class="fa-solid fa-trash text-xs"></i>
               </button>
             </div>
@@ -1679,7 +1670,6 @@
 
       renderAdminAppointments();
 
-      // PLANTILLAS DE MENSAJES WHATSAPP EXACTAS SOLICITADAS
       let msg = "";
       if (newStatus === 'confirmada' && oldStatus === 'pendiente') {
         const fechaFormat = formatDateSpanish(appt.fecha);
@@ -1717,10 +1707,10 @@
       STATE.blockouts.forEach(blk => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="p-2 font-medium text-white">${blk.motivo}</td>
-          <td class="p-2 text-zinc-400">${formatDateSpanish(blk.fecha)} (${blk.hora_inicio}-${blk.hora_fin})</td>
+          <td class="p-2 font-medium text-spataupeoscuro">${blk.motivo}</td>
+          <td class="p-2 text-spatextosub">${formatDateSpanish(blk.fecha)} (${blk.hora_inicio}-${blk.hora_fin})</td>
           <td class="p-2 text-right">
-            <button onclick="deleteBlockout('${blk.id}')" class="text-red-400 hover:text-red-300">
+            <button onclick="deleteBlockout('${blk.id}')" class="text-[#9E4A4A] hover:text-[#853D3D]">
               <i class="fa-solid fa-trash"></i>
             </button>
           </td>
@@ -1735,24 +1725,24 @@
 
       STATE.services.forEach(s => {
         const card = document.createElement('div');
-        card.className = "glass-card p-4 rounded-xl space-y-2 border border-zinc-800";
+        card.className = "glass-card p-4 rounded-xl space-y-2 border border-spaborde";
         card.innerHTML = `
           <div class="flex justify-between items-start">
-            <h5 class="font-bold text-white text-sm">${s.nombre}</h5>
-            <span class="px-2 py-0.5 rounded text-[10px] ${s.activo ? 'bg-emerald-500/20 text-emerald-300' : 'bg-zinc-800 text-zinc-500'}">
+            <h5 class="font-bold text-spataupeoscuro text-sm">${s.nombre}</h5>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${s.activo ? 'bg-[#E6F0E6] text-[#3D6647] border border-[#C5DEC7]' : 'bg-[#F0EBE5] text-spataupe border border-spaborde'}">
               ${s.activo ? 'Activo' : 'Inactivo'}
             </span>
           </div>
-          <p class="text-xs text-zinc-400 line-clamp-2">${s.descripcion || ''}</p>
-          <div class="flex justify-between items-center text-xs pt-2 border-t border-zinc-800">
-            <span class="text-pink-300 font-medium">${s.duracion_min} min</span>
-            <span class="text-white font-bold">$${parseFloat(s.precio).toFixed(2)} MXN</span>
+          <p class="text-xs text-spatextosub line-clamp-2">${s.descripcion || ''}</p>
+          <div class="flex justify-between items-center text-xs pt-2 border-t border-spaborde">
+            <span class="text-spataupe font-medium">${s.duracion_min} min</span>
+            <span class="text-spataupeoscuro font-bold">$${parseFloat(s.precio).toFixed(2)} MXN</span>
           </div>
-          <div class="flex justify-end gap-2 pt-2 border-t border-zinc-800/60">
-            <button onclick="openServiceModal('${s.id}')" class="px-2 py-1 bg-zinc-800 text-zinc-300 rounded text-[10px] hover:bg-zinc-700">
+          <div class="flex justify-end gap-2 pt-2 border-t border-spaborde">
+            <button onclick="openServiceModal('${s.id}')" class="px-2.5 py-1 bg-spasuperficie text-spatextosub border border-spaborde rounded-lg text-[10px] hover:bg-sparosa">
               <i class="fa-solid fa-pen-to-square"></i> Editar
             </button>
-            <button onclick="deleteService('${s.id}')" class="px-2 py-1 bg-red-950/60 text-red-300 rounded text-[10px] border border-red-800/40 hover:bg-red-900/80">
+            <button onclick="deleteService('${s.id}')" class="px-2.5 py-1 bg-[#F8E4E4] text-[#9E4A4A] border border-[#ECC0C0] rounded-lg text-[10px] hover:bg-[#F3CECE]">
               <i class="fa-solid fa-trash"></i> Eliminar
             </button>
           </div>
@@ -1761,27 +1751,27 @@
       });
     }
 
-    // ACCIONES DE CONFIGURACIÓN ADMIN (BLOQUEOS Y CUPONES VISUALIZABLES Y EDITABLES)
+    // ACCIONES DE CONFIGURACIÓN ADMIN
     function renderConfigBlockoutsList() {
       const list = document.getElementById('config-blockouts-list');
       list.innerHTML = '';
 
       if (STATE.blockouts.length === 0) {
-        list.innerHTML = '<p class="text-[11px] text-zinc-500 italic">No hay bloqueos activos.</p>';
+        list.innerHTML = '<p class="text-[11px] text-spataupe italic">No hay bloqueos activos.</p>';
         return;
       }
 
       STATE.blockouts.forEach(blk => {
         const item = document.createElement('div');
-        item.className = "flex justify-between items-center bg-zinc-900/80 p-2 rounded-lg border border-zinc-800 text-[11px]";
+        item.className = "flex justify-between items-center bg-spainput p-2 rounded-lg border border-spaborde text-[11px]";
         item.innerHTML = `
           <div>
-            <p class="font-semibold text-white">${blk.motivo}</p>
-            <p class="text-zinc-400">${blk.fecha} | ${blk.hora_inicio} - ${blk.hora_fin}</p>
+            <p class="font-semibold text-spataupeoscuro">${blk.motivo}</p>
+            <p class="text-spatextosub">${blk.fecha} | ${blk.hora_inicio} - ${blk.hora_fin}</p>
           </div>
           <div class="flex gap-1.5">
-            <button onclick="editBlockout('${blk.id}')" class="text-pink-400 hover:text-pink-300"><i class="fa-solid fa-pen"></i></button>
-            <button onclick="deleteBlockout('${blk.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+            <button onclick="editBlockout('${blk.id}')" class="text-spataupe hover:text-spataupeoscuro"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteBlockout('${blk.id}')" class="text-[#9E4A4A] hover:text-[#853D3D]"><i class="fa-solid fa-trash"></i></button>
           </div>
         `;
         list.appendChild(item);
@@ -1859,33 +1849,33 @@
       list.innerHTML = '';
 
       if (STATE.coupons.length === 0) {
-        list.innerHTML = '<p class="text-[11px] text-zinc-500 italic">No hay cupones creados.</p>';
+        list.innerHTML = '<p class="text-[11px] text-spataupe italic">No hay cupones creados.</p>';
         return;
       }
 
       const cdmxToday = getCDMXDate().toISOString().split('T')[0];
 
       STATE.coupons.forEach(cpn => {
-        let badge = `<span class="px-1.5 py-0.5 text-[9px] rounded bg-emerald-500/20 text-emerald-300 font-bold">Vigente</span>`;
+        let badge = `<span class="px-2 py-0.5 text-[9px] rounded-full bg-[#E6F0E6] text-[#3D6647] font-bold border border-[#C5DEC7]">Vigente</span>`;
         if (cdmxToday < cpn.fecha_inicio) {
-          badge = `<span class="px-1.5 py-0.5 text-[9px] rounded bg-amber-500/20 text-amber-300 font-bold">Próximamente</span>`;
+          badge = `<span class="px-2 py-0.5 text-[9px] rounded-full bg-[#F5E6D3] text-[#8C6239] font-bold border border-[#E8D1B5]">Próximamente</span>`;
         } else if (cdmxToday > cpn.fecha_expiracion) {
-          badge = `<span class="px-1.5 py-0.5 text-[9px] rounded bg-red-500/20 text-red-300 font-bold">Caducó</span>`;
+          badge = `<span class="px-2 py-0.5 text-[9px] rounded-full bg-[#F8E4E4] text-[#9E4A4A] font-bold border border-[#ECC0C0]">Caducó</span>`;
         }
 
         const item = document.createElement('div');
-        item.className = "flex justify-between items-center bg-zinc-900/80 p-2 rounded-lg border border-zinc-800 text-[11px]";
+        item.className = "flex justify-between items-center bg-spainput p-2 rounded-lg border border-spaborde text-[11px]";
         item.innerHTML = `
           <div>
             <div class="flex items-center gap-1.5">
-              <span class="font-bold text-white font-mono">${cpn.codigo}</span>
+              <span class="font-bold text-spataupeoscuro font-mono">${cpn.codigo}</span>
               ${badge}
             </div>
-            <p class="text-zinc-400">${cpn.tipo === 'porcentaje' ? cpn.valor + '%' : '$' + cpn.valor} | ${cpn.fecha_inicio} a ${cpn.fecha_expiracion}</p>
+            <p class="text-spatextosub">${cpn.tipo === 'porcentaje' ? cpn.valor + '%' : '$' + cpn.valor} | ${cpn.fecha_inicio} a ${cpn.fecha_expiracion}</p>
           </div>
           <div class="flex gap-1.5">
-            <button onclick="editCoupon('${cpn.id}')" class="text-pink-400 hover:text-pink-300"><i class="fa-solid fa-pen"></i></button>
-            <button onclick="deleteCoupon('${cpn.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i></button>
+            <button onclick="editCoupon('${cpn.id}')" class="text-spataupe hover:text-spataupeoscuro"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteCoupon('${cpn.id}')" class="text-[#9E4A4A] hover:text-[#853D3D]"><i class="fa-solid fa-trash"></i></button>
           </div>
         `;
         list.appendChild(item);
