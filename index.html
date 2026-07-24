@@ -975,14 +975,12 @@
   <!-- 6. LÓGICA JAVASCRIPT NATIVA SÍNCRONA Y SUPABASE REALTIME             -->
   <!-- ==================================================================== -->
   <script>
-    // REGISTRO DEL SERVICE WORKER PARA PWA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').catch(err => console.log('SW register fail:', err));
       });
     }
 
-    // ESTADO GLOBAL DE LA APLICACIÓN
     const STATE = {
       services: [],
       appointments: [],
@@ -1860,6 +1858,7 @@
       });
     }
 
+    // ENVÍO DE NOTIFICACIONES WHATSAPP AL CAMBIAR ESTADO
     async function updateApptStatus(id, newStatus) {
       const appt = STATE.appointments.find(a => a.id === id);
       if (!appt) return;
@@ -1875,12 +1874,14 @@
       renderAdminAppointments();
 
       let msg = "";
+      const fechaFormat = formatDateSpanish(appt.fecha);
+      const clienteNombre = appt.cliente_nombre || 'Cliente';
+
       if (newStatus === 'confirmada' && oldStatus === 'pendiente') {
-        const fechaFormat = formatDateSpanish(appt.fecha);
-        msg = `SKINCARE MO: ¡Excelente noticia, ${appt.cliente_nombre} 🌿 Tu pago quedó registrado correctamente. Tu cita del ${fechaFormat} a las ${appt.hora_inicio} hrs está totalmente asegurada. Estamos listos para darte la atención que te mereces. ¡Nos vemos muy pronto! ✨💆‍♀️`;
+        msg = `SKINCARE MO: ¡Excelente noticia, ${clienteNombre} 🌿 Tu pago quedó registrado correctamente. Tu cita del ${fechaFormat} a las ${appt.hora_inicio} hrs está totalmente asegurada. Estamos listos para darte la atención que te mereces. ¡Nos vemos muy pronto! ✨💆‍♀️`;
         window.open(`https://wa.me/${appt.cliente_telefono}?text=${encodeURIComponent(msg)}`, '_blank');
       } else if (newStatus === 'cancelada' && oldStatus === 'pendiente') {
-        msg = `SKINCARE MO: Hola, ${appt.cliente_nombre}. 😔 Lamentamos mucho no haber podido confirmar tu cita de hoy por falta de pago a tiempo. Para mantener la calidad y puntualidad de nuestros servicios, liberamos el espacio. Si aún deseas acudir, con gusto puedes volver a realizar tu cita en un horario disponible. ¡Quedamos al pendiente! ✨`;
+        msg = `SKINCARE MO: Hola, ${clienteNombre}. 😔 Lamentamos mucho no haber podido confirmar tu cita de hoy por falta de pago a tiempo. Para mantener la calidad y puntualidad de nuestros servicios, liberamos el espacio. Si aún deseas acudir, con gusto puedes volver a realizar tu cita en un horario disponible. ¡Quedamos al pendiente! ✨`;
         window.open(`https://wa.me/${appt.cliente_telefono}?text=${encodeURIComponent(msg)}`, '_blank');
       }
     }
