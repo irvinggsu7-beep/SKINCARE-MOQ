@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SKINCARE MO - Reservación de Citas & Salud</title>
+  <meta name="description" content="Sistema profesional de reservación de citas en tiempo real para SKINCARE MO. Terapia Física, Salud y Bienestar.">
+  
+  <!-- Google Fonts & FontAwesome CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Tailwind CSS CDN & html2canvas -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fdf2f8',
+              100: '#fce7f3',
+              200: '#fbcfe8',
+              400: '#f472b6',
+              500: '#ec4899',
+              600: '#db2777',
+              700: '#be185d',
+              800: '#9d174d',
+              dark: '#1e1018',
+            }
+          },
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+            serif: ['Playfair Display', 'serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: #0f080c;
+      color: #f3f4f6;
+      font-family: 'Outfit', sans-serif;
+    }
+    .glass-panel {
+      background: rgba(26, 15, 23, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(244, 114, 182, 0.15);
+    }
+    .glass-card {
+      background: rgba(35, 20, 31, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(244, 114, 182, 0.12);
+      transition: all 0.25s ease-in-out;
+    }
+    .glass-card:hover {
+      border-color: rgba(244, 114, 182, 0.4);
+      transform: translateY(-2px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 8, 12, 0.5);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #db2777;
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col custom-scrollbar">
+
+  <!-- ==================================================================== -->
+  <!-- 1. ENCABEZADO GLOBAL (HEADER DE NAVEGACIÓN)                          -->
+  <!-- ==================================================================== -->
+  <header class="sticky top-0 z-40 glass-panel border-b border-pink-900/30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Identidad de Marca -->
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('client')">
+        <img src="assets/logo.png" alt="SKINCARE MO" class="h-12 w-12 rounded-full object-cover border-2 border-pink-500 shadow-lg shadow-pink-500/20" onerror="this.src='https://ui-avatars.com/api/?name=Skincare+MO&background=db2777&color=fff'">
+        <div>
+          <h1 class="font-serif font-bold text-xl sm:text-2xl text-white tracking-wide flex items-center gap-2">
+            SKINCARE MO <span class="text-xs font-sans font-medium px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30">SPA</span>
+          </h1>
+          <p class="text-xs text-pink-300/80 font-light">Terapia Física, Salud y Bienestar</p>
+        </div>
+      </div>
+
+      <!-- Estado de Conexión & Acceso de Usuarios -->
+      <div class="flex items-center space-x-3 sm:space-x-4">
+        <button onclick="openSupabaseModal()" id="connection-status-btn" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30 hover:bg-amber-500/20 transition">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse" id="status-dot"></span>
+          <span id="status-text">Modo Local (Configurar Supabase)</span>
+        </button>
+
+        <button onclick="switchView('client')" id="btn-view-client" class="px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-pink-600/30 text-pink-200 border border-pink-500/40 hover:bg-pink-600/50 transition flex items-center gap-2">
+          <i class="fa-solid fa-calendar-check text-pink-400"></i> Reservar Cita
+        </button>
+
+        <button onclick="handleAdminAccess()" id="btn-view-admin" class="px-4 py-2 text-xs sm:text-sm font-medium rounded-xl bg-zinc-800 text-zinc-300 border border-zinc-700 hover:bg-zinc-700 transition flex items-center gap-2">
+          <i class="fa-solid fa-user-shield text-zinc-400" id="admin-icon"></i> <span id="admin-btn-label">Acceso Admin</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================================================================== -->
+  <!-- 2. BARRA DE CONTROL PRINCIPAL (TOP BAR DEL ADMIN)                   -->
+  <!-- ==================================================================== -->
+  <div id="admin-topbar" class="hidden bg-zinc-900/90 border-b border-pink-500/20 py-3 px-4 sm:px-8">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+        <h2 class="text-sm sm:text-base font-semibold text-white tracking-wide flex items-center gap-2">
+          Panel de Control Administrativo <span class="text-xs bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/40">Autenticado</span>
+        </h2>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
+        <button onclick="openAddServiceModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-pink-600 text-white hover:bg-pink-500 transition shadow-md shadow-pink-600/30 flex items-center gap-1.5">
+          <i class="fa-solid fa-plus"></i> + Nuevo Servicio
+        </button>
+        <button onclick="openQuickBlockModal()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-600 text-white hover:bg-amber-500 transition shadow-md shadow-amber-600/30 flex items-center gap-1.5">
+          <i class="fa-solid fa-ban"></i> 🚫 Bloquear Horario
+        </button>
+        <button onclick="logoutAdmin()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ==================================================================== -->
+    <!-- 3. VISTA DEL CLIENTE (RESERVACIÓN EN TIEMPO REAL)                   -->
+    <!-- ==================================================================== -->
+    <div id="view-client" class="space-y-8">
+      
+      <!-- HERO BANNER -->
+      <div class="relative overflow-hidden rounded-3xl glass-panel p-8 sm:p-12 border border-pink-500/20 text-center space-y-4">
+        <div class="absolute -top-24 -left-24 w-72 h-72 bg-pink-600/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-24 w-72 h-72 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+        
+        <span class="inline-block px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase bg-pink-500/10 text-pink-300 border border-pink-500/30">
+          ✨ Spa & Salud Integral
+        </span>
+        
+        <h2 class="font-serif text-3xl sm:text-5xl font-bold text-white max-w-3xl mx-auto leading-tight">
+          "Tu salud y bienestar merecen la mejor atención."
+        </h2>
+        
+        <p class="text-sm sm:text-base text-zinc-300 max-w-xl mx-auto font-light">
+          Selecciona tus tratamientos favoritos, elige la hora de tu preferencia y confirma tu reservación en tiempo real en solo 3 pasos.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- COLUMNA IZQUIERDA & CENTRAL: PASOS DE RESERVACIÓN -->
+        <div class="lg:col-span-2 space-y-6">
+
+          <!-- PASO 1: SELECCIÓN DUAL DE TRATAMIENTOS -->
+          <div class="glass-panel p-6 rounded-2xl space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                <span class="w-7 h-7 rounded-full bg-pink-600 text-white flex items-center justify-center text-xs font-bold">1</span>
+                Selecciona tu Tratamiento (Máximo 2)
+              </h3>
+              <span class="text-xs text-pink-300 bg-pink-950/60 px-2.5 py-1 rounded-full border border-pink-800/40" id="selected-count-badge">
+                0 / 2 Seleccionados
+              </span>
+            </div>
+
+            <!-- GRID DE SERVICIOS -->
+            <div id="services-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Cargado dinámicamente mediante JavaScript -->
+            </div>
+          </div>
+
+          <!-- PASO 2: SELECCIÓN DE FECHA Y HORARIO -->
+          <div class="glass-panel p-6 rounded-2xl space-y-4">
+            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+              <span class="w-7 h-7 rounded-full bg-pink-600 text-white flex items-center justify-center text-xs font-bold">2</span>
+              Selecciona Fecha y Horario Disponible
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-zinc-400 mb-1">Fecha de la Cita</label>
+                <input type="date" id="booking-date" onchange="calculateAvailableSlots()" class="w-full bg-zinc-900/80 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500 transition">
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-zinc-400 mb-1">Horario Operativo Configurado</label>
+                <div class="text-xs text-pink-300 bg-pink-950/40 border border-pink-800/30 rounded-xl p-2.5 flex items-center gap-2">
+                  <i class="fa-solid fa-clock"></i>
+                  <span id="operating-hours-display">Cargando horario...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- FRANSAS HORARIAS EN TIEMPO REAL -->
+            <div class="space-y-2">
+              <label class="block text-xs font-medium text-zinc-400">Horarios Disponibles Calculados Síncronamente</label>
+              <div id="time-slots-container" class="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-48 overflow-y-auto p-1 custom-scrollbar">
+                <p class="col-span-full text-xs text-zinc-500 text-center py-4">Selecciona primero tu(s) servicio(s) y una fecha válida.</p>
+              </div>
+              <p class="text-[11px] text-zinc-400 flex items-center gap-1.5 italic">
+                <i class="fa-solid fa-circle-info text-pink-400"></i> Se requieren al menos 2 horas de anticipación para agendar.
+              </p>
+            </div>
+          </div>
+
+          <!-- PASO 3: DATOS DEL PACIENTE & CUPÓN -->
+          <div class="glass-panel p-6 rounded-2xl space-y-4">
+            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+              <span class="w-7 h-7 rounded-full bg-pink-600 text-white flex items-center justify-center text-xs font-bold">3</span>
+              Datos del Paciente & Promoción
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-zinc-400 mb-1">Nombre Completo *</label>
+                <input type="text" id="client-name" placeholder="Ej. Mariela Quintana" class="w-full bg-zinc-900/80 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500 transition">
+              </div>
+
+              <div>
+                <label class="block text-xs font-medium text-zinc-400 mb-1">Teléfono WhatsApp *</label>
+                <div class="flex">
+                  <span class="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-zinc-700 bg-zinc-800 text-zinc-300 text-xs font-semibold">
+                    🇲🇽 +52
+                  </span>
+                  <input type="tel" id="client-phone" maxlength="10" placeholder="10 dígitos (ej. 7772148451)" class="w-full bg-zinc-900/80 border border-zinc-700 rounded-r-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-pink-500 transition">
+                </div>
+              </div>
+            </div>
+
+            <!-- CUPÓN DE DESCUENTO -->
+            <div class="pt-2 border-t border-zinc-800/80">
+              <label class="block text-xs font-medium text-zinc-400 mb-1">Cupón de Descuento (Opcional)</label>
+              <div class="flex gap-2">
+                <input type="text" id="coupon-code" placeholder="Código de Cupón" class="uppercase bg-zinc-900/80 border border-zinc-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-pink-500 transition flex-grow">
+                <button onclick="applyCoupon()" class="px-4 py-2 bg-pink-600/30 text-pink-200 border border-pink-500/40 rounded-xl text-xs font-semibold hover:bg-pink-600/50 transition">
+                  Aplicar
+                </button>
+              </div>
+              <p id="coupon-status" class="text-xs mt-1.5 hidden"></p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- COLUMNA DERECHA: RESUMEN Y BOTÓN DE CONFIRMACIÓN -->
+        <div class="space-y-6">
+          <div class="glass-panel p-6 rounded-2xl sticky top-28 space-y-6">
+            <h3 class="font-serif text-xl font-bold text-white border-b border-pink-900/40 pb-3 flex items-center gap-2">
+              <i class="fa-solid fa-receipt text-pink-500"></i> Resumen de la Cita
+            </h3>
+
+            <!-- DETALLE DE SERVICIOS SELECCIONADOS -->
+            <div class="space-y-3" id="summary-services-list">
+              <p class="text-xs text-zinc-500 italic">No has seleccionado ningún servicio aún.</p>
+            </div>
+
+            <!-- DESGLOSE DE TIEMPOS Y PRECIOS -->
+            <div class="space-y-2 border-t border-zinc-800 pt-4 text-xs">
+              <div class="flex justify-between text-zinc-400">
+                <span>Duración Total:</span>
+                <span class="font-semibold text-white" id="summary-duration">0 min</span>
+              </div>
+              <div class="flex justify-between text-zinc-400">
+                <span>Subtotal Servicios:</span>
+                <span class="font-semibold text-white" id="summary-subtotal">$0.00 MXN</span>
+              </div>
+              <div class="flex justify-between text-emerald-400 hidden" id="summary-discount-row">
+                <span>Descuento Cupón:</span>
+                <span class="font-semibold" id="summary-discount">-$0.00 MXN</span>
+              </div>
+              <div class="flex justify-between text-base font-bold text-pink-400 border-t border-zinc-800 pt-2">
+                <span>Total Estimado:</span>
+                <span id="summary-total">$0.00 MXN</span>
+              </div>
+            </div>
+
+            <!-- NOTA DEL ANTICIPO OBLIGATORIO -->
+            <div class="p-3 rounded-xl bg-pink-950/40 border border-pink-800/40 text-[11px] text-pink-200/90 space-y-1">
+              <p class="font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-shield-halved text-pink-400"></i> Anticipo Requerido: $150.00 MXN
+              </p>
+              <p class="text-pink-300/70">
+                Para apartar tu lugar es indispensable transferir $150.00 MXN a OPENBANK MX tras agendar.
+              </p>
+            </div>
+
+            <!-- BOTÓN PRINCIPAL DE AGENDAMIENTO -->
+            <button onclick="confirmBooking()" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white font-bold text-sm shadow-lg shadow-pink-600/30 transition transform hover:-translate-y-0.5 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-calendar-check"></i> Agendar y Generar Ficha
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+
+    <!-- ==================================================================== -->
+    <!-- 4. VISTA DEL PANEL ADMINISTRADOR (TRES PESTAÑAS)                    -->
+    <!-- ==================================================================== -->
+    <div id="view-admin" class="hidden space-y-6">
+
+      <!-- SISTEMA DE PESTAÑAS PRINCIPALES -->
+      <div class="flex border-b border-zinc-800 space-x-2">
+        <button onclick="switchAdminTab('agenda')" id="tab-btn-agenda" class="px-5 py-3 font-medium text-sm rounded-t-xl bg-pink-600/30 text-pink-200 border-t border-x border-pink-500/40 flex items-center gap-2">
+          <i class="fa-solid fa-calendar-days text-pink-400"></i> 1. Agenda & Citas
+        </button>
+        <button onclick="switchAdminTab('servicios')" id="tab-btn-servicios" class="px-5 py-3 font-medium text-sm rounded-t-xl bg-zinc-900/60 text-zinc-400 border-t border-x border-zinc-800 flex items-center gap-2 hover:text-white transition">
+          <i class="fa-solid fa-spa text-pink-400"></i> 2. Servicios
+        </button>
+        <button onclick="switchAdminTab('configuracion')" id="tab-btn-configuracion" class="px-5 py-3 font-medium text-sm rounded-t-xl bg-zinc-900/60 text-zinc-400 border-t border-x border-zinc-800 flex items-center gap-2 hover:text-white transition">
+          <i class="fa-solid fa-sliders text-pink-400"></i> 3. Configuración
+        </button>
+      </div>
+
+      <!-- PESTAÑA 1: AGENDA & CITAS -->
+      <div id="admin-tab-agenda" class="space-y-6">
+        
+        <!-- TARJETAS KPI -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="glass-card p-4 rounded-2xl space-y-1">
+            <p class="text-xs text-zinc-400 font-medium">Total Citas</p>
+            <p class="text-2xl font-bold text-white" id="kpi-total-citas">0</p>
+          </div>
+          <div class="glass-card p-4 rounded-2xl space-y-1">
+            <p class="text-xs text-zinc-400 font-medium">Ingresos Est. ($)</p>
+            <p class="text-2xl font-bold text-pink-400" id="kpi-ingresos-est">$0.00</p>
+          </div>
+          <div class="glass-card p-4 rounded-2xl space-y-1">
+            <p class="text-xs text-zinc-400 font-medium">Servicios Activos</p>
+            <p class="text-2xl font-bold text-emerald-400" id="kpi-servicios-activos">0</p>
+          </div>
+          <div class="glass-card p-4 rounded-2xl space-y-1">
+            <p class="text-xs text-zinc-400 font-medium">Bloqueos Activos</p>
+            <p class="text-2xl font-bold text-amber-400" id="kpi-bloqueos-activos">0</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <!-- ÁREA DE GESTIÓN DE CITAS (IZQUIERDA - 2 COLS) -->
+          <div class="lg:col-span-2 glass-panel p-6 rounded-2xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h3 class="font-serif text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-list-check text-pink-500"></i> Citas Registradas
+              </h3>
+
+              <div class="flex items-center gap-2">
+                <input type="date" id="admin-date-filter" onchange="renderAdminAppointments()" class="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-pink-500">
+                <button onclick="clearCancelledAppointments()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded-lg border border-zinc-700 transition">
+                  Limpiar Canceladas
+                </button>
+              </div>
+            </div>
+
+            <!-- TABLA DE CITAS -->
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-zinc-900/80 text-zinc-400 uppercase font-semibold border-b border-zinc-800">
+                  <tr>
+                    <th class="p-3">Cliente</th>
+                    <th class="p-3">Servicio(s)</th>
+                    <th class="p-3">Fecha & Hora</th>
+                    <th class="p-3">Límite Pago</th>
+                    <th class="p-3">Estado & Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-appointments-tbody" class="divide-y divide-zinc-800/60 text-zinc-300">
+                  <!-- Renderizado por JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ÁREA DE BLOQUEOS DE AGENDA (DERECHA - 1 COL) -->
+          <div class="glass-panel p-6 rounded-2xl space-y-4">
+            <h3 class="font-serif text-lg font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-calendar-xmark text-amber-500"></i> Bloqueos Activos
+            </h3>
+
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-zinc-900/80 text-zinc-400 uppercase font-semibold border-b border-zinc-800">
+                  <tr>
+                    <th class="p-2">Motivo</th>
+                    <th class="p-2">Fecha / Hora</th>
+                    <th class="p-2 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-blockouts-tbody" class="divide-y divide-zinc-800/60 text-zinc-300">
+                  <!-- Renderizado por JavaScript -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- PESTAÑA 2: SERVICIOS -->
+      <div id="admin-tab-servicios" class="hidden space-y-6">
+        <div class="glass-panel p-6 rounded-2xl space-y-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-zinc-800 pb-4">
+            <div>
+              <h3 class="font-serif text-xl font-bold text-white">Catálogo de Servicios Administrables</h3>
+              <p class="text-xs text-pink-300/80 mt-1">
+                <i class="fa-solid fa-circle-info"></i> Cualquier cambio recalcula automáticamente las franjas horarias disponibles para los clientes.
+              </p>
+            </div>
+            <button onclick="openAddServiceModal()" class="px-4 py-2 text-xs font-bold rounded-xl bg-pink-600 text-white hover:bg-pink-500 transition shadow-lg shadow-pink-600/30 flex items-center gap-2">
+              <i class="fa-solid fa-plus"></i> Agregar Servicio
+            </button>
+          </div>
+
+          <div id="admin-services-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Renderizado por JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 3: CONFIGURACIÓN (4 COLUMNAS FUNCIONALES) -->
+      <div id="admin-tab-configuracion" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- COLUMNA 1: CONTRASEÑA ADMIN -->
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <h4 class="font-serif font-bold text-white text-base border-b border-zinc-800 pb-2 flex items-center gap-2">
+            <i class="fa-solid fa-key text-pink-500"></i> 1. Clave Admin
+          </h4>
+          <p class="text-xs text-zinc-400">Contraseña actual por defecto: <span class="font-mono text-pink-300 font-bold">0000</span></p>
+
+          <form onsubmit="changeAdminPassword(event)" class="space-y-3 text-xs">
+            <div>
+              <label class="block text-zinc-400 mb-1">Clave Actual</label>
+              <input type="password" id="pwd-current" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+            </div>
+            <div>
+              <label class="block text-zinc-400 mb-1">Nueva Clave</label>
+              <input type="password" id="pwd-new" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+            </div>
+            <div>
+              <label class="block text-zinc-400 mb-1">Confirmar Nueva Clave</label>
+              <input type="password" id="pwd-confirm" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+            </div>
+            <button type="submit" class="w-full py-2 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-500 transition">
+              Actualizar Clave
+            </button>
+          </form>
+        </div>
+
+        <!-- COLUMNA 2: HORARIO OPERATIVO SEMANAL -->
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <h4 class="font-serif font-bold text-white text-base border-b border-zinc-800 pb-2 flex items-center gap-2">
+            <i class="fa-solid fa-clock text-pink-500"></i> 2. Horario Operativo
+          </h4>
+          
+          <form onsubmit="saveOperatingHours(event)" class="space-y-3 text-xs">
+            <div>
+              <label class="block text-zinc-400 mb-1 font-semibold">Días de Atención</label>
+              <div class="grid grid-cols-2 gap-1.5 text-zinc-300">
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="1" class="day-checkbox" checked> Lunes</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="2" class="day-checkbox" checked> Martes</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="3" class="day-checkbox" checked> Miércoles</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="4" class="day-checkbox" checked> Jueves</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="5" class="day-checkbox" checked> Viernes</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="6" class="day-checkbox" checked> Sábado</label>
+                <label class="flex items-center gap-1.5"><input type="checkbox" value="0" class="day-checkbox"> Domingo</label>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-zinc-400 mb-1 font-semibold">Hora de Apertura</label>
+              <input type="time" id="cfg-open-time" value="14:00" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+            </div>
+
+            <div>
+              <label class="block text-zinc-400 mb-1 font-semibold">Hora de Cierre</label>
+              <input type="time" id="cfg-close-time" value="20:30" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+            </div>
+
+            <button type="submit" class="w-full py-2 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-500 transition">
+              Guardar Horario
+            </button>
+          </form>
+        </div>
+
+        <!-- COLUMNA 3: BLOQUEOS ESPECIALES -->
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <h4 class="font-serif font-bold text-white text-base border-b border-zinc-800 pb-2 flex items-center gap-2">
+            <i class="fa-solid fa-ban text-amber-500"></i> 3. Bloqueos Especiales
+          </h4>
+
+          <form onsubmit="saveSpecialBlockout(event)" class="space-y-3 text-xs">
+            <div>
+              <label class="block text-zinc-400 mb-1">Motivo</label>
+              <input type="text" id="blk-reason" placeholder="Ej. Mantenimiento" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+            </div>
+            <div>
+              <label class="block text-zinc-400 mb-1">Fecha</label>
+              <input type="date" id="blk-date" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-zinc-400 mb-1">Inicio</label>
+                <input type="time" id="blk-start" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              </div>
+              <div>
+                <label class="block text-zinc-400 mb-1">Fin</label>
+                <input type="time" id="blk-end" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              </div>
+            </div>
+            <button type="submit" class="w-full py-2 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-500 transition">
+              Crear Bloqueo
+            </button>
+          </form>
+        </div>
+
+        <!-- COLUMNA 4: CUPONES & VIGENCIAS -->
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+          <h4 class="font-serif font-bold text-white text-base border-b border-zinc-800 pb-2 flex items-center gap-2">
+            <i class="fa-solid fa-ticket text-pink-500"></i> 4. Cupones
+          </h4>
+
+          <form onsubmit="saveCoupon(event)" class="space-y-3 text-xs">
+            <div>
+              <label class="block text-zinc-400 mb-1">Código Promocional</label>
+              <input type="text" id="cpn-code" uppercase placeholder="Ej. VERANO20" required class="uppercase w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-zinc-400 mb-1">Tipo</label>
+                <select id="cpn-type" class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+                  <option value="porcentaje">Porcentaje (%)</option>
+                  <option value="fijo">Monto Fijo ($)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-zinc-400 mb-1">Valor</label>
+                <input type="number" step="0.01" id="cpn-value" placeholder="10" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+              </div>
+            </div>
+            <div>
+              <label class="block text-zinc-400 mb-1">Fecha Inicio</label>
+              <input type="date" id="cpn-start" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+            </div>
+            <div>
+              <label class="block text-zinc-400 mb-1">Fecha Caducidad</label>
+              <input type="date" id="cpn-end" required class="w-full bg-zinc-900 border border-zinc-700 rounded-lg p-2 text-white">
+            </div>
+            <button type="submit" class="w-full py-2 bg-pink-600 text-white font-semibold rounded-lg hover:bg-pink-500 transition">
+              Crear Cupón
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+
+  <!-- ==================================================================== -->
+  <!-- 5. MODALES INTERACTIVOS DE LA APLICACIÓN                            -->
+  <!-- ==================================================================== -->
+
+  <!-- MODAL 1: FICHA DE DEPÓSITO DESCARGABLE & WHATSAPP -->
+  <div id="modal-deposit-receipt" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-pink-500/30 space-y-4">
+      
+      <!-- CONTENIDO A CAPTURAR (CANVAS / PNG) -->
+      <div id="receipt-capture-area" class="p-6 bg-zinc-950 text-white space-y-4">
+        
+        <div class="flex items-center justify-between border-b border-pink-900/40 pb-3">
+          <div class="flex items-center gap-3">
+            <img src="assets/logo.png" alt="Logo" class="h-10 w-10 rounded-full border border-pink-500">
+            <div>
+              <h4 class="font-serif font-bold text-lg text-white">SKINCARE MO</h4>
+              <p class="text-[10px] text-pink-300">Ficha Oficial de Reservación</p>
+            </div>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-[10px] font-mono bg-pink-500/20 text-pink-300 border border-pink-500/30" id="rcpt-code">
+            #MO-0000
+          </span>
+        </div>
+
+        <!-- RELOJ DE TIEMPO LÍMITE DE PAGO -->
+        <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-hourglass-half text-amber-400 animate-spin"></i>
+            <span>Tiempo Límite para Transferir:</span>
+          </div>
+          <span class="font-mono font-bold text-sm" id="rcpt-countdown">00:00:00</span>
+        </div>
+
+        <!-- RESUMEN DE CITA -->
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between text-zinc-400">
+            <span>Paciente:</span>
+            <span class="font-semibold text-white" id="rcpt-client-name">-</span>
+          </div>
+          <div class="flex justify-between text-zinc-400">
+            <span>Servicio(s):</span>
+            <span class="font-semibold text-white text-right" id="rcpt-services">-</span>
+          </div>
+          <div class="flex justify-between text-zinc-400">
+            <span>Fecha y Hora:</span>
+            <span class="font-semibold text-pink-300" id="rcpt-datetime">-</span>
+          </div>
+          <div class="flex justify-between text-zinc-400 border-t border-zinc-800 pt-2">
+            <span>Total Tratamientos:</span>
+            <span class="font-semibold text-white" id="rcpt-total">$0.00 MXN</span>
+          </div>
+        </div>
+
+        <!-- DATOS BANCARIOS DE OPENBANK MX -->
+        <div class="p-4 rounded-2xl bg-zinc-900 border border-pink-500/30 space-y-2 text-xs">
+          <div class="flex items-center justify-between font-bold text-pink-400 border-b border-zinc-800 pb-1">
+            <span>OPENBANK MX</span>
+            <span class="text-white">Anticipo: $150.00 MXN</span>
+          </div>
+          <div class="space-y-1 text-zinc-300 text-[11px]">
+            <p><strong>Cuenta CLABE:</strong> <span class="font-mono text-white select-all">646180401617525026</span></p>
+            <p><strong>Titular:</strong> Mariela Olvera Quintana</p>
+            <p class="text-amber-300/90 font-semibold">⚠️ Obligatorio incluir Referencia: <span id="rcpt-reference-name" class="underline">Nombre del Paciente</span></p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTONES DE ACCIÓN -->
+      <div class="px-6 pb-6 space-y-2">
+        <div class="grid grid-cols-2 gap-3">
+          <button onclick="downloadReceiptPNG()" class="w-full py-2.5 bg-black hover:bg-zinc-900 border border-zinc-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-download"></i> Descargar Ficha
+          </button>
+          
+          <a id="btn-whatsapp-action" target="_blank" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+            <i class="fa-brands fa-whatsapp text-lg"></i> Confirmar WhatsApp
+          </a>
+        </div>
+
+        <button onclick="closeModal('modal-deposit-receipt')" class="w-full py-2 text-xs text-zinc-400 hover:text-white transition">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MODAL 2: AUTENTICACIÓN ADMIN -->
+  <div id="modal-admin-auth" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-sm rounded-3xl p-6 border border-pink-500/30 space-y-4">
+      <div class="text-center space-y-1">
+        <h4 class="font-serif text-xl font-bold text-white">Acceso Administrativo</h4>
+        <p class="text-xs text-zinc-400">Ingresa tu contraseña para continuar</p>
+      </div>
+
+      <form onsubmit="submitAdminAuth(event)" class="space-y-4">
+        <div>
+          <input type="password" id="admin-auth-input" placeholder="Contraseña (Por defecto: 0000)" class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-center font-mono text-lg text-white focus:outline-none focus:border-pink-500">
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-pink-600 hover:bg-pink-500 text-white font-bold text-sm rounded-xl transition">
+          Ingresar al Panel
+        </button>
+      </form>
+
+      <button onclick="closeModal('modal-admin-auth')" class="w-full text-center text-xs text-zinc-500 hover:text-zinc-300">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL 3: CONFIGURAR SUPABASE -->
+  <div id="modal-supabase" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="glass-panel w-full max-w-md rounded-3xl p-6 border border-amber-500/30 space-y-4">
+      <div class="text-center space-y-1">
+        <h4 class="font-serif text-xl font-bold text-white">Conexión Backend Supabase</h4>
+        <p class="text-xs text-zinc-400">Ingresa las credenciales de tu proyecto en Supabase</p>
+      </div>
+
+      <form onsubmit="saveSupabaseCredentials(event)" class="space-y-3 text-xs">
+        <div>
+          <label class="block text-zinc-400 mb-1">SUPABASE URL</label>
+          <input type="url" id="spb-url" placeholder="https://xyz.supabase.co" required class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white">
+        </div>
+        <div>
+          <label class="block text-zinc-400 mb-1">SUPABASE ANON KEY</label>
+          <input type="text" id="spb-key" placeholder="eyJhbGciOi..." required class="w-full bg-zinc-900 border border-zinc-700 rounded-xl p-2.5 text-white">
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition">
+          Guardar y Conectar Realtime
+        </button>
+      </form>
+
+      <button onclick="closeModal('modal-supabase')" class="w-full text-center text-xs text-zinc-500 hover:text-zinc-300">
+        Cerrar (Usar Modo Local)
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ==================================================================== -->
+  <!-- 6. LÓGICA JAVASCRIPT NATIVA SÍNCRONA Y SUPABASE REALTIME             -->
+  <!-- ==================================================================== -->
+  <script>
+    // ESTADO GLOBAL DE LA APLICACIÓN
+    const STATE = {
+      services: [],
+      appointments: [],
+      blockouts: [],
+      coupons: [],
+      config: {
+        admin_password: "0000",
+        horario_apertura: "14:00",
+        horario_cierre: "20:30",
+        dias_operativos: ["1", "2", "3", "4", "5", "6"]
+      },
+      selectedServiceIds: [],
+      appliedCoupon: null,
+      selectedDate: null,
+      selectedSlot: null,
+      supabaseClient: null,
+      isAdminAuthenticated: false,
+      activeTimerInterval: null
+    };
+
+    // DATOS SEMILLA DE RESPALDO (LOCAL FALLBACK)
+    const SEED_SERVICES = [
+      { id: "1", nombre: "Facial Glow Premium", descripcion: "Limpieza profunda con punta de diamante, mascarilla hidroplástica de rosas y sueros hidratantes.", duracion_min: 60, precio: 850.00, activo: true },
+      { id: "2", nombre: "Masaje Relajante Pink Lotus", descripcion: "Masaje de cuerpo completo con aceites esenciales de loto y rosas.", duracion_min: 60, precio: 900.00, activo: true },
+      { id: "3", nombre: "Pedicura Spa Estética", descripcion: "Cuidado especializado de pies, exfoliación con sales rosas y esmaltado.", duracion_min: 60, precio: 600.00, activo: true },
+      { id: "4", nombre: "Depilación Láser Diodo", descripcion: "Sesión de depilación médica rápida, indolora y efectiva.", duracion_min: 30, precio: 450.00, activo: true }
+    ];
+
+    const SEED_COUPONS = [
+      { id: "c1", codigo: "BIENVENIDA10", tipo: "porcentaje", valor: 10.00, fecha_inicio: new Date().toISOString().split('T')[0], fecha_expiracion: new Date(Date.now() + 30*86400000).toISOString().split('T')[0], activo: true }
+    ];
+
+    // INICIALIZACIÓN AL CARGAR LA PÁGINA
+    window.addEventListener('DOMContentLoaded', () => {
+      initStorage();
+      initSupabase();
+      renderServicesGrid();
+      updateOperatingHoursDisplay();
+      renderAdminAppointments();
+      renderAdminBlockouts();
+      renderAdminServices();
+
+      // Set min date to today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('booking-date').min = today;
+    });
+
+    // SISTEMA DE ALMACENAMIENTO (LOCALSTORAGE + SUPABASE)
+    function initStorage() {
+      const storedConfig = localStorage.getItem('mo_config');
+      if (storedConfig) STATE.config = JSON.parse(storedConfig);
+
+      const storedServices = localStorage.getItem('mo_services');
+      STATE.services = storedServices ? JSON.parse(storedServices) : SEED_SERVICES;
+
+      const storedCoupons = localStorage.getItem('mo_coupons');
+      STATE.coupons = storedCoupons ? JSON.parse(storedCoupons) : SEED_COUPONS;
+
+      const storedAppts = localStorage.getItem('mo_appointments');
+      STATE.appointments = storedAppts ? JSON.parse(storedAppts) : [];
+
+      const storedBlocks = localStorage.getItem('mo_blockouts');
+      STATE.blockouts = storedBlocks ? JSON.parse(storedBlocks) : [];
+    }
+
+    function saveLocalState() {
+      localStorage.setItem('mo_config', JSON.stringify(STATE.config));
+      localStorage.setItem('mo_services', JSON.stringify(STATE.services));
+      localStorage.setItem('mo_coupons', JSON.stringify(STATE.coupons));
+      localStorage.setItem('mo_appointments', JSON.stringify(STATE.appointments));
+      localStorage.setItem('mo_blockouts', JSON.stringify(STATE.blockouts));
+    }
+
+    // CONEXIÓN SUPABASE REALTIME
+    function initSupabase() {
+      const url = localStorage.getItem('spb_url');
+      const key = localStorage.getItem('spb_key');
+
+      if (url && key && window.supabase) {
+        try {
+          STATE.supabaseClient = window.supabase.createClient(url, key);
+          document.getElementById('status-dot').className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+          document.getElementById('status-text').innerText = "🟢 Conectado en Vivo (Supabase)";
+
+          // Suscribir a cambios en tiempo real
+          STATE.supabaseClient
+            .channel('public:realtime')
+            .on('postgres_changes', { event: '*', schema: 'public' }, () => fetchSupabaseData())
+            .subscribe();
+
+          fetchSupabaseData();
+        } catch (e) {
+          console.error("Error al conectar con Supabase:", e);
+        }
+      }
+    }
+
+    async function fetchSupabaseData() {
+      if (!STATE.supabaseClient) return;
+      try {
+        const { data: s } = await STATE.supabaseClient.from('servicios').select('*');
+        if (s) STATE.services = s;
+
+        const { data: c } = await STATE.supabaseClient.from('cupones').select('*');
+        if (c) STATE.coupons = c;
+
+        const { data: a } = await STATE.supabaseClient.from('citas').select('*');
+        if (a) STATE.appointments = a;
+
+        const { data: b } = await STATE.supabaseClient.from('bloqueos_agenda').select('*');
+        if (b) STATE.blockouts = b;
+
+        renderServicesGrid();
+        renderAdminAppointments();
+        renderAdminBlockouts();
+        renderAdminServices();
+        calculateAvailableSlots();
+      } catch (err) {
+        console.error("Error fetching Supabase data:", err);
+      }
+    }
+
+    function openSupabaseModal() {
+      document.getElementById('spb-url').value = localStorage.getItem('spb_url') || '';
+      document.getElementById('spb-key').value = localStorage.getItem('spb_key') || '';
+      openModal('modal-supabase');
+    }
+
+    function saveSupabaseCredentials(e) {
+      e.preventDefault();
+      const url = document.getElementById('spb-url').value.trim();
+      const key = document.getElementById('spb-key').value.trim();
+
+      localStorage.setItem('spb_url', url);
+      localStorage.setItem('spb_key', key);
+      closeModal('modal-supabase');
+      initSupabase();
+    }
+
+    // CONMUTACIÓN DE VISTAS Y NAVEGACIÓN
+    function switchView(view) {
+      if (view === 'admin' && !STATE.isAdminAuthenticated) {
+        openModal('modal-admin-auth');
+        return;
+      }
+
+      document.getElementById('view-client').classList.toggle('hidden', view !== 'client');
+      document.getElementById('view-admin').classList.toggle('hidden', view !== 'admin');
+      document.getElementById('admin-topbar').classList.toggle('hidden', view !== 'admin');
+    }
+
+    function handleAdminAccess() {
+      if (STATE.isAdminAuthenticated) {
+        switchView('admin');
+      } else {
+        openModal('modal-admin-auth');
+      }
+    }
+
+    function submitAdminAuth(e) {
+      e.preventDefault();
+      const pass = document.getElementById('admin-auth-input').value;
+      if (pass === STATE.config.admin_password) {
+        STATE.isAdminAuthenticated = true;
+        closeModal('modal-admin-auth');
+        document.getElementById('admin-btn-label').innerText = "Panel Admin";
+        document.getElementById('admin-icon').className = "fa-solid fa-lock-open text-emerald-400";
+        switchView('admin');
+      } else {
+        alert("⚠️ Contraseña incorrecta. Por defecto es 0000");
+      }
+    }
+
+    function logoutAdmin() {
+      STATE.isAdminAuthenticated = false;
+      document.getElementById('admin-btn-label').innerText = "Acceso Admin";
+      document.getElementById('admin-icon').className = "fa-solid fa-user-shield text-zinc-400";
+      switchView('client');
+    }
+
+    function switchAdminTab(tab) {
+      ['agenda', 'servicios', 'configuracion'].forEach(t => {
+        const btn = document.getElementById(`tab-btn-${t}`);
+        const view = document.getElementById(`admin-tab-${t}`);
+        if (t === tab) {
+          btn.className = "px-5 py-3 font-medium text-sm rounded-t-xl bg-pink-600/30 text-pink-200 border-t border-x border-pink-500/40 flex items-center gap-2";
+          view.classList.remove('hidden');
+        } else {
+          btn.className = "px-5 py-3 font-medium text-sm rounded-t-xl bg-zinc-900/60 text-zinc-400 border-t border-x border-zinc-800 flex items-center gap-2 hover:text-white transition";
+          view.classList.add('hidden');
+        }
+      });
+    }
+
+    // RENDERIZADO DE SERVICIOS EN CLIENTE
+    function renderServicesGrid() {
+      const grid = document.getElementById('services-grid');
+      grid.innerHTML = '';
+
+      STATE.services.filter(s => s.activo).forEach(service => {
+        const isSelected = STATE.selectedServiceIds.includes(service.id);
+        const card = document.createElement('div');
+        card.className = `glass-card p-4 rounded-xl cursor-pointer flex flex-col justify-between space-y-3 ${isSelected ? 'border-pink-500 bg-pink-950/30' : ''}`;
+        card.onclick = () => toggleServiceSelection(service.id);
+
+        card.innerHTML = `
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <h4 class="font-bold text-white text-sm flex items-center gap-2">
+                ${service.nombre}
+              </h4>
+              <input type="checkbox" ${isSelected ? 'checked' : ''} class="w-4 h-4 accent-pink-600 rounded">
+            </div>
+            <p class="text-xs text-zinc-400 line-clamp-2">${service.descripcion || ''}</p>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-zinc-800/60 text-xs">
+            <span class="text-pink-300 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-clock text-[10px]"></i> ${service.duracion_min} min
+            </span>
+            <span class="text-white font-bold text-sm">$${parseFloat(service.precio).toFixed(2)} MXN</span>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      updateSummary();
+    }
+
+    function toggleServiceSelection(id) {
+      if (STATE.selectedServiceIds.includes(id)) {
+        STATE.selectedServiceIds = STATE.selectedServiceIds.filter(i => i !== id);
+      } else {
+        if (STATE.selectedServiceIds.length >= 2) {
+          alert("⚠️ Máximo puedes seleccionar hasta 2 tratamientos por cita.");
+          return;
+        }
+        STATE.selectedServiceIds.push(id);
+      }
+      document.getElementById('selected-count-badge').innerText = `${STATE.selectedServiceIds.length} / 2 Seleccionados`;
+      renderServicesGrid();
+      calculateAvailableSlots();
+    }
+
+    function updateSummary() {
+      const selected = STATE.services.filter(s => STATE.selectedServiceIds.includes(s.id));
+      const listContainer = document.getElementById('summary-services-list');
+      listContainer.innerHTML = '';
+
+      if (selected.length === 0) {
+        listContainer.innerHTML = '<p class="text-xs text-zinc-500 italic">No has seleccionado ningún servicio aún.</p>';
+        document.getElementById('summary-duration').innerText = '0 min';
+        document.getElementById('summary-subtotal').innerText = '$0.00 MXN';
+        document.getElementById('summary-total').innerText = '$0.00 MXN';
+        return;
+      }
+
+      let subtotal = 0;
+      let totalDuration = 0;
+
+      selected.forEach(s => {
+        subtotal += parseFloat(s.precio);
+        totalDuration += parseInt(s.duracion_min);
+
+        const item = document.createElement('div');
+        item.className = 'flex justify-between items-center text-xs bg-zinc-900/50 p-2 rounded-lg border border-zinc-800';
+        item.innerHTML = `
+          <div>
+            <p class="font-medium text-white">${s.nombre}</p>
+            <p class="text-[10px] text-pink-300">${s.duracion_min} min</p>
+          </div>
+          <span class="font-semibold text-white">$${parseFloat(s.precio).toFixed(2)}</span>
+        `;
+        listContainer.appendChild(item);
+      });
+
+      let discount = 0;
+      if (STATE.appliedCoupon) {
+        if (STATE.appliedCoupon.tipo === 'porcentaje') {
+          discount = subtotal * (parseFloat(STATE.appliedCoupon.valor) / 100);
+        } else {
+          discount = parseFloat(STATE.appliedCoupon.valor);
+        }
+      }
+
+      const total = Math.max(0, subtotal - discount);
+
+      document.getElementById('summary-duration').innerText = `${totalDuration} min`;
+      document.getElementById('summary-subtotal').innerText = `$${subtotal.toFixed(2)} MXN`;
+      
+      if (discount > 0) {
+        document.getElementById('summary-discount-row').classList.remove('hidden');
+        document.getElementById('summary-discount').innerText = `-$${discount.toFixed(2)} MXN`;
+      } else {
+        document.getElementById('summary-discount-row').classList.add('hidden');
+      }
+
+      document.getElementById('summary-total').innerText = `$${total.toFixed(2)} MXN`;
+    }
+
+    // ALGORITMO DE DISPONIBILIDAD DE HORARIOS EN TIEMPO REAL
+    function updateOperatingHoursDisplay() {
+      const open = STATE.config.horario_apertura || "14:00";
+      const close = STATE.config.horario_cierre || "20:30";
+      document.getElementById('operating-hours-display').innerText = `${open} a ${close} hrs (Lun - Sáb)`;
+    }
+
+    function calculateAvailableSlots() {
+      const dateVal = document.getElementById('booking-date').value;
+      const container = document.getElementById('time-slots-container');
+      container.innerHTML = '';
+
+      if (!dateVal || STATE.selectedServiceIds.length === 0) {
+        container.innerHTML = '<p class="col-span-full text-xs text-zinc-500 text-center py-4">Selecciona primero tu(s) servicio(s) y una fecha válida.</p>';
+        return;
+      }
+
+      const dateObj = new Date(dateVal + 'T00:00:00');
+      const dayOfWeek = dateObj.getDay().toString(); // 0 = Dom, 1 = Lun...
+
+      if (!STATE.config.dias_operativos.includes(dayOfWeek)) {
+        container.innerHTML = '<p class="col-span-full text-xs text-amber-400 text-center py-4">⚠️ El negocio no opera en este día de la semana.</p>';
+        return;
+      }
+
+      const totalDuration = STATE.services
+        .filter(s => STATE.selectedServiceIds.includes(s.id))
+        .reduce((sum, s) => sum + parseInt(s.duracion_min), 0);
+
+      const [openHour, openMin] = (STATE.config.horario_apertura || "14:00").split(':').map(Number);
+      const [closeHour, closeMin] = (STATE.config.horario_cierre || "20:30").split(':').map(Number);
+
+      const startMinutes = openHour * 60 + openMin;
+      const endMinutes = closeHour * 60 + closeMin;
+
+      const now = new Date();
+      const isToday = dateVal === now.toISOString().split('T')[0];
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+      let availableCount = 0;
+
+      for (let time = startMinutes; time + totalDuration <= endMinutes; time += 30) {
+        const slotHour = Math.floor(time / 60);
+        const slotMin = time % 60;
+        const timeStr = `${slotHour.toString().padStart(2, '0')}:${slotMin.toString().padStart(2, '0')}`;
+        
+        const endTimeInMin = time + totalDuration;
+        const endHour = Math.floor(endTimeInMin / 60);
+        const endMin = endTimeInMin % 60;
+        const endTimeStr = `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
+
+        // Validación 1: Mínimo 2 horas y 1 minuto (121 min) de anticipación si es hoy
+        if (isToday && (time - currentMinutes < 121)) {
+          continue;
+        }
+
+        // Validación 2: Empalme con citas existentes (no canceladas)
+        const hasApptCollision = STATE.appointments.some(a => {
+          if (a.fecha !== dateVal || a.estado === 'cancelada') return false;
+          const aStart = timeToMinutes(a.hora_inicio);
+          const aEnd = timeToMinutes(a.hora_fin);
+          return (time < aEnd && endTimeInMin > aStart);
+        });
+
+        if (hasApptCollision) continue;
+
+        // Validación 3: Empalme con bloqueos de agenda
+        const hasBlockCollision = STATE.blockouts.some(b => {
+          if (b.fecha !== dateVal) return false;
+          const bStart = timeToMinutes(b.hora_inicio);
+          const bEnd = timeToMinutes(b.hora_fin);
+          return (time < bEnd && endTimeInMin > bStart);
+        });
+
+        if (hasBlockCollision) continue;
+
+        // Slot válido
+        availableCount++;
+        const isSelected = STATE.selectedSlot === timeStr;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => selectSlot(timeStr, endTimeStr);
+        btn.className = `py-2 px-3 rounded-xl text-xs font-semibold border transition ${
+          isSelected
+            ? 'bg-pink-600 text-white border-pink-400 shadow-md shadow-pink-600/40'
+            : 'bg-zinc-900/80 text-zinc-300 border-zinc-800 hover:border-pink-500/50 hover:text-white'
+        }`;
+        btn.innerText = timeStr;
+        container.appendChild(btn);
+      }
+
+      if (availableCount === 0) {
+        container.innerHTML = '<p class="col-span-full text-xs text-amber-400 text-center py-4">No hay franjas horarias disponibles para esta fecha con la duración requerida.</p>';
+      }
+    }
+
+    function selectSlot(startStr, endStr) {
+      STATE.selectedSlot = startStr;
+      STATE.selectedEndSlot = endStr;
+      calculateAvailableSlots();
+    }
+
+    function timeToMinutes(tStr) {
+      if (!tStr) return 0;
+      const [h, m] = tStr.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    // VIGENCIA Y APLICACIÓN DE CUPONES EN TIEMPO REAL
+    function applyCoupon() {
+      const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+      const statusEl = document.getElementById('coupon-status');
+      const dateVal = document.getElementById('booking-date').value || new Date().toISOString().split('T')[0];
+
+      if (!code) {
+        statusEl.className = "text-xs mt-1.5 text-zinc-400";
+        statusEl.innerText = "Ingresa un código de cupón.";
+        statusEl.classList.remove('hidden');
+        return;
+      }
+
+      const coupon = STATE.coupons.find(c => c.codigo.toUpperCase() === code && c.activo);
+
+      if (!coupon) {
+        statusEl.className = "text-xs mt-1.5 text-red-400 font-semibold";
+        statusEl.innerText = "❌ El cupón no existe o está inactivo.";
+        statusEl.classList.remove('hidden');
+        STATE.appliedCoupon = null;
+        updateSummary();
+        return;
+      }
+
+      if (dateVal < coupon.fecha_inicio) {
+        statusEl.className = "text-xs mt-1.5 text-amber-400 font-semibold";
+        statusEl.innerText = `⏳ Cupón Próximamente Válido (Inicio: ${coupon.fecha_inicio})`;
+        statusEl.classList.remove('hidden');
+        STATE.appliedCoupon = null;
+        updateSummary();
+        return;
+      }
+
+      if (dateVal > coupon.fecha_expiracion) {
+        statusEl.className = "text-xs mt-1.5 text-red-400 font-semibold";
+        statusEl.innerText = `🚫 Cupón Caducado (Expiró el: ${coupon.fecha_expiracion})`;
+        statusEl.classList.remove('hidden');
+        STATE.appliedCoupon = null;
+        updateSummary();
+        return;
+      }
+
+      STATE.appliedCoupon = coupon;
+      statusEl.className = "text-xs mt-1.5 text-emerald-400 font-semibold";
+      statusEl.innerText = `✅ Cupón Aplicado: ${coupon.tipo === 'porcentaje' ? coupon.valor + '%' : '$' + coupon.valor} de descuento.`;
+      statusEl.classList.remove('hidden');
+      updateSummary();
+    }
+
+    // CONFIRMACIÓN DE CITA & GENERACIÓN DE FICHA DE DEPÓSITO
+    async function confirmBooking() {
+      if (STATE.selectedServiceIds.length === 0) {
+        alert("⚠️ Selecciona al menos 1 tratamiento.");
+        return;
+      }
+
+      const dateVal = document.getElementById('booking-date').value;
+      if (!dateVal || !STATE.selectedSlot) {
+        alert("⚠️ Por favor selecciona una fecha y horario disponible.");
+        return;
+      }
+
+      const name = document.getElementById('client-name').value.trim();
+      const phone = document.getElementById('client-phone').value.trim();
+
+      if (!name || phone.length < 10) {
+        alert("⚠️ Ingresa tu nombre completo y un número de WhatsApp válido (10 dígitos).");
+        return;
+      }
+
+      // LÓGICA DE VENTANA DE PAGO DINÁMICA (2h vs 30m)
+      const bookingDateTime = new Date(`${dateVal}T${STATE.selectedSlot}:00`);
+      const now = new Date();
+      const diffHours = (bookingDateTime - now) / (1000 * 60 * 60);
+
+      let toleranceMinutes = 120; // 2 Horas Estándar (>6h anticipación)
+      let toleranceType = 'regular';
+
+      if (diffHours <= 6) {
+        toleranceMinutes = 30; // 30 Minutos de Pago Inmediato (entre 2h1m y 6h)
+        toleranceType = 'pronta';
+      }
+
+      const paymentDeadline = new Date(now.getTime() + toleranceMinutes * 60000);
+      const apptCode = `MO-${Math.floor(1000 + Math.random() * 9000)}`;
+
+      const selectedServices = STATE.services.filter(s => STATE.selectedServiceIds.includes(s.id));
+      const serviceNames = selectedServices.map(s => s.nombre).join(', ');
+      const totalDuration = selectedServices.reduce((sum, s) => sum + parseInt(s.duracion_min), 0);
+      const subtotal = selectedServices.reduce((sum, s) => sum + parseFloat(s.precio), 0);
+
+      let discount = 0;
+      if (STATE.appliedCoupon) {
+        discount = STATE.appliedCoupon.tipo === 'porcentaje'
+          ? subtotal * (parseFloat(STATE.appliedCoupon.valor) / 100)
+          : parseFloat(STATE.appliedCoupon.valor);
+      }
+      const total = Math.max(0, subtotal - discount);
+
+      const newAppt = {
+        id: crypto.randomUUID ? crypto.randomUUID() : apptCode,
+        codigo_cita: apptCode,
+        cliente_nombre: name,
+        cliente_telefono: `52${phone}`,
+        servicios_ids: STATE.selectedServiceIds,
+        servicios_nombres: serviceNames,
+        total_duracion_min: totalDuration,
+        subtotal: subtotal,
+        cupon_codigo: STATE.appliedCoupon ? STATE.appliedCoupon.codigo : null,
+        descuento: discount,
+        total: total,
+        monto_anticipo: 150.00,
+        fecha: dateVal,
+        hora_inicio: STATE.selectedSlot,
+        hora_fin: STATE.selectedEndSlot,
+        limite_pago: paymentDeadline.toISOString(),
+        tipo_tolerancia: toleranceType,
+        estado: 'pendiente',
+        creado_en: now.toISOString()
+      };
+
+      STATE.appointments.push(newAppt);
+      saveLocalState();
+
+      if (STATE.supabaseClient) {
+        await STATE.supabaseClient.from('citas').insert([newAppt]);
+      }
+
+      // Cargar y mostrar la Ficha de Depósito Modal
+      displayReceiptModal(newAppt);
+    }
+
+    function displayReceiptModal(appt) {
+      document.getElementById('rcpt-code').innerText = `#${appt.codigo_cita}`;
+      document.getElementById('rcpt-client-name').innerText = appt.cliente_nombre;
+      document.getElementById('rcpt-services').innerText = appt.servicios_nombres;
+      document.getElementById('rcpt-datetime').innerText = `${appt.fecha} a las ${appt.hora_inicio} hrs`;
+      document.getElementById('rcpt-total').innerText = `$${parseFloat(appt.total).toFixed(2)} MXN`;
+      document.getElementById('rcpt-reference-name').innerText = appt.cliente_nombre;
+
+      // Iniciar el reloj de tiempo límite de pago
+      startReceiptCountdown(appt.limite_pago);
+
+      // Configurar enlace de WhatsApp directo
+      const msg = encodeURIComponent(
+        `🌸 *NUEVA RESERVACIÓN - SKINCARE MO*\n\n` +
+        `📋 *Código:* ${appt.codigo_cita}\n` +
+        `👤 *Paciente:* ${appt.cliente_nombre}\n` +
+        `💆 *Servicio(s):* ${appt.servicios_nombres}\n` +
+        `📅 *Fecha & Hora:* ${appt.fecha} @ ${appt.hora_inicio} hrs\n` +
+        `💰 *Total Cita:* $${parseFloat(appt.total).toFixed(2)} MXN\n` +
+        `🏦 *Anticipo Pendiente:* $150.00 MXN (OPENBANK MX)\n\n` +
+        `_Adjunto la ficha de depósito y mi comprobante de transferencia con mi nombre como referencia._`
+      );
+
+      const waBtn = document.getElementById('btn-whatsapp-action');
+      waBtn.href = `https://wa.me/527772148451?text=${msg}`;
+
+      openModal('modal-deposit-receipt');
+    }
+
+    function startReceiptCountdown(deadlineIso) {
+      if (STATE.activeTimerInterval) clearInterval(STATE.activeTimerInterval);
+
+      const deadline = new Date(deadlineIso).getTime();
+
+      const updateClock = () => {
+        const now = new Date().getTime();
+        const diff = deadline - now;
+
+        if (diff <= 0) {
+          document.getElementById('rcpt-countdown').innerText = "00:00:00 (EXPIRADO)";
+          clearInterval(STATE.activeTimerInterval);
+          return;
+        }
+
+        const hrs = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+        document.getElementById('rcpt-countdown').innerText = 
+          `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      };
+
+      updateClock();
+      STATE.activeTimerInterval = setInterval(updateClock, 1000);
+    }
+
+    function downloadReceiptPNG() {
+      const element = document.getElementById('receipt-capture-area');
+      html2canvas(element, { backgroundColor: '#090508' }).then(canvas => {
+        const link = document.createElement('a');
+        link.download = `Ficha-SkincareMO-${document.getElementById('rcpt-code').innerText}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
+
+    // ADMINISTRACIÓN & RENDERIZADO DE TABLAS ADMIN
+    function renderAdminAppointments() {
+      const tbody = document.getElementById('admin-appointments-tbody');
+      tbody.innerHTML = '';
+
+      const filterDate = document.getElementById('admin-date-filter').value;
+      let appts = STATE.appointments;
+
+      if (filterDate) {
+        appts = appts.filter(a => a.fecha === filterDate);
+      }
+
+      // KPIs
+      document.getElementById('kpi-total-citas').innerText = STATE.appointments.length;
+      const totalRev = STATE.appointments.reduce((sum, a) => sum + parseFloat(a.total || 0), 0);
+      document.getElementById('kpi-ingresos-est').innerText = `$${totalRev.toFixed(2)}`;
+      document.getElementById('kpi-servicios-activos').innerText = STATE.services.filter(s => s.activo).length;
+      document.getElementById('kpi-bloqueos-activos').innerText = STATE.blockouts.length;
+
+      appts.forEach(appt => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-zinc-900/40 transition";
+
+        const isExpired = new Date(appt.limite_pago).getTime() < Date.now() && appt.estado === 'pendiente';
+        
+        let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Pendiente</span>`;
+        if (appt.estado === 'confirmada') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Confirmada</span>`;
+        if (appt.estado === 'cancelada') statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-300 border border-red-500/30">Cancelada</span>`;
+        if (isExpired) statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-700">Expirado</span>`;
+
+        tr.innerHTML = `
+          <td class="p-3 font-semibold text-white">
+            ${appt.cliente_nombre}
+            <div class="text-[10px] text-zinc-400 font-mono">${appt.cliente_telefono}</div>
+          </td>
+          <td class="p-3 font-medium text-pink-200">${appt.servicios_nombres}</td>
+          <td class="p-3">
+            <div>${appt.fecha}</div>
+            <div class="text-zinc-400">${appt.hora_inicio} - ${appt.hora_fin}</div>
+          </td>
+          <td class="p-3">
+            <span class="font-mono text-[11px] ${isExpired ? 'text-zinc-500' : 'text-amber-300'}">
+              ${new Date(appt.limite_pago).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+            </span>
+          </td>
+          <td class="p-3">
+            <div class="flex items-center gap-2">
+              ${statusBadge}
+              ${appt.estado === 'pendiente' ? `
+                <button onclick="updateApptStatus('${appt.id}', 'confirmada')" class="px-2 py-1 bg-emerald-600 text-white rounded text-[10px] hover:bg-emerald-500">Confirmar</button>
+                <button onclick="updateApptStatus('${appt.id}', 'cancelada')" class="px-2 py-1 bg-red-600 text-white rounded text-[10px] hover:bg-red-500">Cancelar</button>
+              ` : ''}
+              <a href="https://wa.me/${appt.cliente_telefono}" target="_blank" class="p-1 text-emerald-400 hover:text-emerald-300">
+                <i class="fa-brands fa-whatsapp text-sm"></i>
+              </a>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function updateApptStatus(id, newStatus) {
+      const appt = STATE.appointments.find(a => a.id === id);
+      if (appt) {
+        appt.estado = newStatus;
+        saveLocalState();
+
+        if (STATE.supabaseClient) {
+          await STATE.supabaseClient.from('citas').update({ estado: newStatus }).eq('id', id);
+        }
+
+        renderAdminAppointments();
+
+        // Generar enlace WhatsApp de notificación
+        let msg = "";
+        if (newStatus === 'confirmada') {
+          msg = `🌸 *SKINCARE MO*: Hola ${appt.cliente_nombre}, ¡Tu pago ha sido verificado con éxito y tu cita del ${appt.fecha} a las ${appt.hora_inicio} hrs está 100% CONFIRMADA! Te esperamos con gusto.`;
+        } else {
+          msg = `🌸 *SKINCARE MO*: Hola ${appt.cliente_nombre}, Tu cita del ${appt.fecha} ha sido cancelada por falta de pago dentro del tiempo límite. Si deseas acudir, por favor realiza una nueva solicitud.`;
+        }
+
+        window.open(`https://wa.me/${appt.cliente_telefono}?text=${encodeURIComponent(msg)}`, '_blank');
+      }
+    }
+
+    function clearCancelledAppointments() {
+      STATE.appointments = STATE.appointments.filter(a => a.estado !== 'cancelada');
+      saveLocalState();
+      renderAdminAppointments();
+    }
+
+    function renderAdminBlockouts() {
+      const tbody = document.getElementById('admin-blockouts-tbody');
+      tbody.innerHTML = '';
+
+      STATE.blockouts.forEach(blk => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-2 font-medium text-white">${blk.motivo}</td>
+          <td class="p-2 text-zinc-400">${blk.fecha} (${blk.hora_inicio}-${blk.hora_fin})</td>
+          <td class="p-2 text-right">
+            <button onclick="deleteBlockout('${blk.id}')" class="text-red-400 hover:text-red-300">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function deleteBlockout(id) {
+      STATE.blockouts = STATE.blockouts.filter(b => b.id !== id);
+      saveLocalState();
+      if (STATE.supabaseClient) {
+        await STATE.supabaseClient.from('bloqueos_agenda').delete().eq('id', id);
+      }
+      renderAdminBlockouts();
+      calculateAvailableSlots();
+    }
+
+    function renderAdminServices() {
+      const container = document.getElementById('admin-services-list');
+      container.innerHTML = '';
+
+      STATE.services.forEach(s => {
+        const card = document.createElement('div');
+        card.className = "glass-card p-4 rounded-xl space-y-2 border border-zinc-800";
+        card.innerHTML = `
+          <div class="flex justify-between items-start">
+            <h5 class="font-bold text-white text-sm">${s.nombre}</h5>
+            <span class="px-2 py-0.5 rounded text-[10px] ${s.activo ? 'bg-emerald-500/20 text-emerald-300' : 'bg-zinc-800 text-zinc-500'}">
+              ${s.activo ? 'Activo' : 'Inactivo'}
+            </span>
+          </div>
+          <p class="text-xs text-zinc-400">${s.descripcion}</p>
+          <div class="flex justify-between items-center text-xs pt-2 border-t border-zinc-800">
+            <span class="text-pink-300 font-medium">${s.duracion_min} min</span>
+            <span class="text-white font-bold">$${parseFloat(s.precio).toFixed(2)} MXN</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // ACCIONES DE CONFIGURACIÓN ADMIN
+    function changeAdminPassword(e) {
+      e.preventDefault();
+      const curr = document.getElementById('pwd-current').value;
+      const newP = document.getElementById('pwd-new').value;
+      const confP = document.getElementById('pwd-confirm').value;
+
+      if (curr !== STATE.config.admin_password) {
+        alert("❌ La contraseña actual no coincide.");
+        return;
+      }
+
+      if (newP !== confP) {
+        alert("❌ La nueva contraseña y la confirmación no coinciden.");
+        return;
+      }
+
+      STATE.config.admin_password = newP;
+      saveLocalState();
+      alert("✅ Contraseña administrativa actualizada exitosamente.");
+      e.target.reset();
+    }
+
+    function saveOperatingHours(e) {
+      e.preventDefault();
+      const checkboxes = document.querySelectorAll('.day-checkbox:checked');
+      const selectedDays = Array.from(checkboxes).map(c => c.value);
+
+      STATE.config.dias_operativos = selectedDays;
+      STATE.config.horario_apertura = document.getElementById('cfg-open-time').value;
+      STATE.config.horario_cierre = document.getElementById('cfg-close-time').value;
+
+      saveLocalState();
+      updateOperatingHoursDisplay();
+      calculateAvailableSlots();
+      alert("✅ Horario operativo guardado y actualizado en tiempo real.");
+    }
+
+    function saveSpecialBlockout(e) {
+      e.preventDefault();
+      const reason = document.getElementById('blk-reason').value;
+      const date = document.getElementById('blk-date').value;
+      const start = document.getElementById('blk-start').value;
+      const end = document.getElementById('blk-end').value;
+
+      const newBlock = {
+        id: crypto.randomUUID ? crypto.randomUUID() : `blk-${Date.now()}`,
+        motivo: reason,
+        fecha: date,
+        hora_inicio: start,
+        hora_fin: end
+      };
+
+      STATE.blockouts.push(newBlock);
+      saveLocalState();
+
+      if (STATE.supabaseClient) {
+        STATE.supabaseClient.from('bloqueos_agenda').insert([newBlock]);
+      }
+
+      renderAdminBlockouts();
+      calculateAvailableSlots();
+      alert("✅ Bloqueo de agenda registrado.");
+      e.target.reset();
+    }
+
+    function saveCoupon(e) {
+      e.preventDefault();
+      const code = document.getElementById('cpn-code').value.trim().toUpperCase();
+      const type = document.getElementById('cpn-type').value;
+      const val = parseFloat(document.getElementById('cpn-value').value);
+      const start = document.getElementById('cpn-start').value;
+      const end = document.getElementById('cpn-end').value;
+
+      const newCoupon = {
+        id: crypto.randomUUID ? crypto.randomUUID() : `cpn-${Date.now()}`,
+        codigo: code,
+        tipo: type,
+        valor: val,
+        fecha_inicio: start,
+        fecha_expiracion: end,
+        activo: true
+      };
+
+      STATE.coupons.push(newCoupon);
+      saveLocalState();
+
+      if (STATE.supabaseClient) {
+        STATE.supabaseClient.from('cupones').insert([newCoupon]);
+      }
+
+      alert("✅ Cupón registrado con éxito.");
+      e.target.reset();
+    }
+
+    // UTILIDADES MODAL
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
