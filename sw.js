@@ -1,4 +1,4 @@
-const CACHE_NAME = 'skincare-mo-v5';
+const CACHE_NAME = 'skincare-mo-v6';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
