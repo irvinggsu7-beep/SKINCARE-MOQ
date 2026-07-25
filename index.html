@@ -982,6 +982,12 @@
       });
     }
 
+    // Limpieza de claves erróneas que pudieron guardarse previamente en memoria local
+    if (localStorage.getItem('spb_key') && !localStorage.getItem('spb_key').startsWith('eyJ')) {
+      localStorage.removeItem('spb_key');
+      localStorage.removeItem('spb_url');
+    }
+
     // ====================================================================
     // CREDENCIALES GLOBALES REALTIME SUPABASE (ANON PUBLIC KEY VALIDA)
     // ====================================================================
